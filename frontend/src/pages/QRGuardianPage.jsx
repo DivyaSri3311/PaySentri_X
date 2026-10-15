@@ -27,12 +27,12 @@ import {
   Receipt,
   ArrowRight,
   Sun,
-  Moon
+  Moon,
+  X
 } from "lucide-react";
 import jsQR from "jsqr";
 import RiskGauge from "../components/RiskGauge";
 import { api } from "../utils/api";
-import standeeImg from "../assets/bhim_upi_counter_standee.jpg";
 
 const PRESET_QR_SCENARIOS = [
   {
@@ -518,13 +518,41 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
             />
             <canvas ref={canvasRef} className="hidden" />
 
-            {/* Standby / Captured Preview Standee Photo */}
-            {!isScanning && (
-              <img
-                src={imagePreview || standeeImg}
-                alt="Countertop UPI QR Standee"
-                className="w-full h-full object-cover"
-              />
+            {/* Captured / Uploaded Image Preview (Only when an image is selected) */}
+            {!isScanning && imagePreview && (
+              <>
+                <img
+                  src={imagePreview}
+                  alt="Captured QR Code Preview"
+                  className="w-full h-full object-contain bg-black"
+                />
+                <button
+                  type="button"
+                  onClick={() => setImagePreview(null)}
+                  className="absolute top-3 right-3 z-30 px-2.5 py-1 rounded-lg bg-black/70 hover:bg-rose-600/90 text-white text-[11px] font-medium backdrop-blur-md border border-white/20 transition-all flex items-center gap-1.5 shadow-md"
+                  title="Remove image"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Remove Image</span>
+                </button>
+              </>
+            )}
+
+            {/* Standby Viewfinder Placeholder when no image is loaded and not scanning */}
+            {!isScanning && !imagePreview && (
+              <div className="flex flex-col items-center justify-center text-center p-6 select-none z-10">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-3 shadow-lg border ${
+                  isDark ? "bg-slate-900/90 border-slate-700/60" : "bg-slate-900 border-slate-700"
+                }`}>
+                  <QrCode className="w-7 h-7 text-cyan-400 opacity-80" />
+                </div>
+                <p className="text-xs font-semibold text-slate-300 tracking-wide uppercase">
+                  Camera Viewfinder Standby
+                </p>
+                <p className="text-[11px] text-slate-500 mt-1 max-w-[220px] leading-relaxed">
+                  Start live camera scan or upload a QR code image to analyze
+                </p>
+              </div>
             )}
 
             {/* 4 Corner Brackets Framing Target */}
