@@ -21,7 +21,7 @@ import SettingsPage from "./pages/SettingsPage";
 import { api } from "./utils/api";
 
 export default function App() {
-  const [activePage, setActivePage] = useState("qr-guardian");
+  const [activePage, setActivePage] = useState("command-core");
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [backendOnline, setBackendOnline] = useState(true);
   const [prefilledData, setPrefilledData] = useState(null);

@@ -88,7 +88,7 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
               setIsMobileOpen(false);
             }}
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
-              activePage === "dashboard" || (activePage === "command-core" && false)
+              activePage === "command-core" || activePage === "dashboard"
                 ? "bg-blue-50 text-blue-600 font-semibold"
                 : "text-slate-700 hover:text-slate-900 hover:bg-slate-50"
             }`}
