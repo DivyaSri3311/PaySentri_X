@@ -350,24 +350,24 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
 
   return (
     <div className="space-y-6">
-      {/* Top Page Header matching Screenshot 1 */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* Top Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
         <div className="flex items-center space-x-3.5">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm shrink-0">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-sm shrink-0 border border-blue-500/20">
             <QrCode className="w-5 h-5 text-white" />
           </div>
           <div>
             <div className="flex items-center space-x-2.5">
               <h1 className="text-xl sm:text-2xl font-bold font-heading text-slate-900 tracking-tight">
-                QR Guardian
+                Payment Scam Checker
               </h1>
-              <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-2xs">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                 <span>NPCI Compliant</span>
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-              Scan or upload any UPI QR code to verify <strong className="font-semibold text-slate-700">merchant</strong> identity, detect tampering, and analyze risks.
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
+              Scan or upload any payment QR code to verify <strong className="font-semibold text-slate-700">merchant</strong> identity, detect tampering, and prevent scam transfers.
             </p>
           </div>
         </div>
@@ -376,19 +376,19 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
       {/* Main 2-Column Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column (7 Cols) */}
-        <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+        <div className="lg:col-span-7 bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
           {/* Top Tabs */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 p-1 bg-slate-100/80 rounded-xl border border-slate-200/60">
             <button
               type="button"
               onClick={() => {
                 setActiveInputMode("camera");
                 if (!isScanning) startCamera();
               }}
-              className={`flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+              className={`flex items-center justify-center space-x-2 py-2 px-4 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
                 activeInputMode === "camera"
-                  ? "bg-blue-600 text-white shadow-sm hover:bg-blue-700"
-                  : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
+                  ? "bg-white text-blue-700 shadow-sm border border-slate-200/60"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
               }`}
             >
               <Camera className="w-4 h-4" />
@@ -402,10 +402,10 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                 setActiveInputMode("upload");
                 fileInputRef.current?.click();
               }}
-              className={`flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+              className={`flex items-center justify-center space-x-2 py-2 px-4 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
                 activeInputMode === "upload"
-                  ? "bg-blue-600 text-white shadow-sm hover:bg-blue-700"
-                  : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
+                  ? "bg-white text-blue-700 shadow-sm border border-slate-200/60"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
               }`}
             >
               <Upload className="w-4 h-4" />
@@ -649,11 +649,11 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
               </div>
             </div>
 
-            {/* Dark Action Button matching Screenshot 1 */}
+            {/* Primary Action Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-[#0f172a] hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm shadow-sm transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
+              className="w-full py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm shadow-sm transition-all active:scale-[0.99] flex items-center justify-center space-x-2 disabled:opacity-50"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
@@ -662,7 +662,7 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                 </span>
               ) : (
                 <>
-                  <ShieldCheck className="w-4 h-4 text-white" />
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
                   <span>Verify QR Authenticity & Counter Match</span>
                 </>
               )}
@@ -733,13 +733,13 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
 
         {/* Right Column (5 Cols) */}
         <div className="lg:col-span-5 space-y-5">
-          {/* Card 1: How to use QR Guardian matching Screenshot 1 */}
-          <div className="bg-[#f0f7ff] border border-blue-100 rounded-2xl p-5 shadow-sm space-y-3.5">
+          {/* Card 1: How to use Payment Scam Checker */}
+          <div className="bg-gradient-to-br from-blue-50/90 to-indigo-50/40 border border-blue-200/70 rounded-2xl p-5 shadow-xs space-y-3.5">
             <div className="flex items-center space-x-2 text-slate-900 font-bold text-sm">
-              <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
+              <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
                 <Info className="w-3.5 h-3.5 text-white" />
               </div>
-              <span>How to use QR Guardian</span>
+              <span>How to use Payment Scam Checker</span>
             </div>
 
             <div className="space-y-3 text-xs text-slate-600">
@@ -867,39 +867,42 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                 {/* 4-Tier Data Breakdown */}
                 <div className="space-y-2.5 pt-2 border-t border-slate-100">
                   {/* 1. QR Payload */}
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 pb-1 border-b border-slate-200 font-sans">
-                      <span>1. Extracted from QR Payload</span>
-                      <span className="text-[10px] text-blue-600 font-mono">Decoded</span>
+                  <div className="p-3.5 rounded-xl bg-slate-50/90 border border-slate-200/80 text-xs space-y-2 font-mono shadow-2xs">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 pb-1.5 border-b border-slate-200/80 font-sans">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                        <span>1. Extracted from QR Payload</span>
+                      </span>
+                      <span className="text-[10px] text-blue-700 bg-blue-50 border border-blue-200/60 px-1.5 py-0.5 rounded font-mono font-semibold">Decoded</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Payee VPA:</span>
-                      <span className="text-slate-900 font-semibold truncate max-w-[200px]">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-sans">Payee VPA:</span>
+                      <span className="text-slate-900 font-semibold truncate max-w-[210px]">
                         {result.parsed_payload?.vpa || "N/A"}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Payee Name:</span>
-                      <span className="text-slate-800">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-sans">Payee Name:</span>
+                      <span className="text-slate-800 font-sans font-medium truncate max-w-[210px]">
                         {result.parsed_payload?.merchant_name || "N/A"}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">MCC Code:</span>
-                      <span className="text-slate-700">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-sans">MCC Code:</span>
+                      <span className="text-slate-700 font-semibold">
                         {result.parsed_payload?.mcc_code || "0000"}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Mode:</span>
-                      <span className="text-slate-700">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-sans">Mode:</span>
+                      <span className="text-slate-700 font-sans">
                         {result.parsed_payload?.qr_mode || "Static"}
                       </span>
                     </div>
                     {result.parsed_payload?.amount && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Amount:</span>
-                        <span className="text-emerald-700 font-bold">
+                      <div className="flex justify-between items-center pt-1 border-t border-slate-200/60">
+                        <span className="text-slate-500 font-sans">Amount:</span>
+                        <span className="text-emerald-700 font-bold font-mono text-xs">
                           ₹{result.parsed_payload.amount}
                         </span>
                       </div>
@@ -907,76 +910,82 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                   </div>
 
                   {/* 2. Trusted Registry Lookup */}
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 pb-1 border-b border-slate-200 font-sans">
-                      <span>2. Trusted Registry Lookup</span>
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
+                  <div className="p-3.5 rounded-xl bg-slate-50/90 border border-slate-200/80 text-xs space-y-2 font-mono shadow-2xs">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 pb-1.5 border-b border-slate-200/80 font-sans">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                        <span>2. Trusted Registry Lookup</span>
+                      </span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${
                         result.is_verified
-                          ? "bg-emerald-100 text-emerald-800"
-                          : "bg-slate-200 text-slate-600"
+                          ? "bg-emerald-50 text-emerald-800 border-emerald-200/80"
+                          : "bg-slate-100 text-slate-600 border-slate-200/80"
                       }`}>
                         {result.is_verified ? "ENROLLED" : "NOT ENROLLED"}
                       </span>
                     </div>
                     {result.merchant_details ? (
                       <>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Registered Entity:</span>
-                          <span className="text-emerald-700 font-bold">
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-500 font-sans">Registered Entity:</span>
+                          <span className="text-emerald-700 font-bold font-sans">
                             {result.merchant_details.brand_name}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Registered VPA:</span>
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-500 font-sans">Registered VPA:</span>
                           <span className="text-slate-800">
                             {result.merchant_details.registered_vpa}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Category:</span>
-                          <span className="text-slate-700">
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-500 font-sans">Category:</span>
+                          <span className="text-slate-700 font-sans">
                             {result.merchant_details.category}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Tier:</span>
-                          <span className="text-emerald-700 font-bold">
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-500 font-sans">Tier:</span>
+                          <span className="text-emerald-700 font-bold font-sans">
                             {result.merchant_details.tier}
                           </span>
                         </div>
                       </>
                     ) : (
-                      <p className="text-[11px] text-slate-500 font-sans italic">
+                      <p className="text-[11px] text-slate-500 font-sans italic py-0.5">
                         No enterprise registration on file for VPA "{result.parsed_payload?.vpa}".
                       </p>
                     )}
                   </div>
 
                   {/* 3. Counter Branding & POS Signature */}
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 pb-1 border-b border-slate-200 font-sans">
-                      <span>3. Counter Branding & POS Signature</span>
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
+                  <div className="p-3.5 rounded-xl bg-slate-50/90 border border-slate-200/80 text-xs space-y-2 font-mono shadow-2xs">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 pb-1.5 border-b border-slate-200/80 font-sans">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                        <span>3. Counter Branding & POS Signature</span>
+                      </span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${
                         result.is_swapped
-                          ? "bg-rose-100 text-rose-800"
-                          : "bg-emerald-100 text-emerald-800"
+                          ? "bg-rose-50 text-rose-800 border-rose-200/80"
+                          : "bg-emerald-50 text-emerald-800 border-emerald-200/80"
                       }`}>
                         {result.is_swapped ? "CONTRADICTION" : "CONSISTENT"}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Visual Store:</span>
-                      <span className="text-slate-800 font-semibold">{claimedBrand || "None entered"}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-sans">Visual Store:</span>
+                      <span className="text-slate-800 font-sans font-semibold">{claimedBrand || "None entered"}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Counter Match:</span>
-                      <span className={result.is_swapped ? "text-rose-600 font-bold" : "text-emerald-700 font-bold"}>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-sans">Counter Match:</span>
+                      <span className={`font-sans font-bold ${result.is_swapped ? "text-rose-600" : "text-emerald-700"}`}>
                         {result.is_swapped ? "FAILED (Sticker Swap Detected)" : "PASSED"}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">POS Signature:</span>
-                      <span className={result.pos_signature_valid ? "text-emerald-700 font-bold" : "text-slate-600"}>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-sans">POS Signature:</span>
+                      <span className={`font-sans font-medium ${result.pos_signature_valid ? "text-emerald-700 font-semibold" : "text-slate-600"}`}>
                         {result.pos_signature_valid ? "VALID (Ed25519 Hardware POS)" : "Not present / Unsigned"}
                       </span>
                     </div>
