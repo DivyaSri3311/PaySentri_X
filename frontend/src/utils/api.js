@@ -207,5 +207,30 @@ export const api = {
       throw new Error(`Upload Error: ${res.status} ${res.statusText}`);
     }
     return await res.json();
+  },
+
+  // GhostPay: Transcribe Voice Audio (Whisper Neural STT)
+  transcribeGhostPayVoice: async (audioBlob, customOpenAiKey = null) => {
+    const formData = new FormData();
+    formData.append("file", audioBlob, "voice_command.webm");
+    if (customOpenAiKey) {
+      formData.append("openai_api_key", customOpenAiKey);
+    }
+    const res = await fetch("http://localhost:8000/api/ghostpay/transcribe", {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) {
+      throw new Error(`Audio transcription error: ${res.status} ${res.statusText}`);
+    }
+    return await res.json();
+  },
+
+  // GhostPay: AI Payment Investigation Agent (OpenAI LLM + Tool Calling)
+  investigateGhostPayAgent: async (payload) => {
+    return await request("/api/ghostpay/agent/investigate", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
   }
 };

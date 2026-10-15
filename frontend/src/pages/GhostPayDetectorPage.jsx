@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   AlertTriangle,
   CheckCircle2,
-  XCircle,
   HelpCircle,
   RefreshCw,
   Copy,
@@ -19,12 +18,12 @@ import {
   ArrowRight,
   FileText,
   Clock,
-  Sparkles,
   Info,
   Trash2,
   Search
 } from "lucide-react";
 import RiskGauge from "../components/RiskGauge";
+import GhostPayVoiceCopilot from "../components/GhostPayVoiceCopilot";
 import { api } from "../utils/api";
 
 export default function GhostPayDetectorPage({ prefilledData, setActivePage, onOpenComplaintModal }) {
@@ -307,6 +306,7 @@ export default function GhostPayDetectorPage({ prefilledData, setActivePage, onO
   const getAssessmentStyle = (assessment) => {
     switch (assessment) {
       case "VERIFIED_BY_TRUSTED_SOURCE":
+      case "VERIFIED BY TRUSTED SOURCE":
         return {
           bg: "bg-emerald-50",
           border: "border-emerald-200",
@@ -316,15 +316,17 @@ export default function GhostPayDetectorPage({ prefilledData, setActivePage, onO
           label: "VERIFIED BY TRUSTED SOURCE"
         };
       case "SUSPICIOUS_REVIEW_REQUIRED":
+      case "SUSPICIOUS EVIDENCE":
         return {
           bg: "bg-rose-50",
           border: "border-rose-200",
           text: "text-rose-800",
           badge: "bg-rose-100 text-rose-800 border-rose-300",
           icon: ShieldAlert,
-          label: "SUSPICIOUS — REVIEW REQUIRED"
+          label: "SUSPICIOUS EVIDENCE"
         };
       case "INSUFFICIENT_EVIDENCE":
+      case "INSUFFICIENT EVIDENCE":
         return {
           bg: "bg-amber-50",
           border: "border-amber-200",
@@ -333,6 +335,7 @@ export default function GhostPayDetectorPage({ prefilledData, setActivePage, onO
           icon: HelpCircle,
           label: "INSUFFICIENT EVIDENCE"
         };
+      case "NO OBVIOUS FRAUD DETECTED — NOT VERIFIED":
       case "NOT_VERIFIED":
       default:
         return {
@@ -341,7 +344,7 @@ export default function GhostPayDetectorPage({ prefilledData, setActivePage, onO
           text: "text-blue-900",
           badge: "bg-blue-100 text-blue-800 border-blue-300",
           icon: AlertTriangle,
-          label: "NOT VERIFIED"
+          label: "NO OBVIOUS FRAUD DETECTED — NOT VERIFIED"
         };
     }
   };
@@ -381,13 +384,54 @@ export default function GhostPayDetectorPage({ prefilledData, setActivePage, onO
       </div>
 
       {/* Notice Banner */}
-      <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 flex items-start space-x-3 text-xs text-amber-900">
+      <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-3.5 py-2.5 flex items-start space-x-2.5 text-xs text-amber-900">
         <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-        <div className="leading-relaxed">
+        <div className="leading-snug">
           <span className="font-semibold text-amber-950">Important Merchant Notice: </span>
           Screenshot analysis evaluates visual integrity and extracted consistency only. A customer screenshot cannot prove that funds were deposited into your bank account. Always verify credit confirmation via your official merchant app, bank SMS, or soundbox before releasing goods.
         </div>
       </div>
+
+      {/* 2. GhostPay Voice Copilot Control */}
+      <GhostPayVoiceCopilot
+        capturedImage={capturedImage}
+        expectedAmount={expectedAmount}
+        expectedRecipient={expectedRecipient}
+        expectedVpa={expectedVpa}
+        expectedUtr={expectedUtr}
+        approxTime={approxTime}
+        merchantConfirmedCredit={merchantConfirmedCredit}
+        onSetAmount={(amt) => setExpectedAmount(amt)}
+        onSetRecipient={(rec) => setExpectedRecipient(rec)}
+        onSetVpa={(vpa) => setExpectedVpa(vpa)}
+        onSetUtr={(utr) => setExpectedUtr(utr)}
+        onSetApproxTime={(t) => setApproxTime(t)}
+        onSelectTab={(tab) => {
+          setActiveTab(tab);
+          if (tab === "camera") setCapturedImage(null);
+        }}
+        onCapturePhoto={handleCapturePhoto}
+        onAnalyze={handleAnalyzePayment}
+        onSetAnalysisResult={(res) => setAnalysisResult(res)}
+        onSelectPreset={handleSelectPreset}
+        selectedPresetId={selectedPresetId}
+        presets={presets}
+        hasImage={!!capturedImage}
+        onClearForm={() => {
+          setExpectedAmount("");
+          setExpectedRecipient("");
+          setExpectedVpa("");
+          setExpectedUtr("");
+          setApproxTime("");
+          setCapturedImage(null);
+          setImageMeta(null);
+          setAnalysisResult(null);
+          setAnalysisError(null);
+          setSelectedPresetId(null);
+        }}
+        analysisResult={analysisResult}
+        isAnalyzing={isAnalyzing}
+      />
 
       {/* Main Grid: Left Workspace (Input & Details) vs Right Contextual Results */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -727,148 +771,105 @@ export default function GhostPayDetectorPage({ prefilledData, setActivePage, onO
             )}
           </div>
 
-          {/* B. Demo Test Presets Bar */}
-          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3">
-            <div className="flex items-center justify-between">
+          {/* B. Transaction Expected Details Form */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3.5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div className="flex items-center space-x-2">
-                <Sparkles className="w-4 h-4 text-amber-500" />
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                  Demo Presets & Synthetic Evidence
+                  Expected Transaction Details
                 </span>
+                <span className="text-[10px] text-slate-400 font-medium">(Optional Cross-Check)</span>
               </div>
-              <span className="text-[11px] text-slate-500 font-medium">1-Click Test Scenarios</span>
+              <span className="text-[10px] text-slate-400 font-mono">Verification Parameters</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {presets.map((preset) => {
-                const isSelected = selectedPresetId === preset.id;
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => handleSelectPreset(preset)}
-                    className={`text-left p-2.5 rounded-lg border text-xs transition-all ${
-                      isSelected
-                        ? "bg-blue-50/70 border-blue-400 ring-1 ring-blue-400"
-                        : "bg-slate-50/70 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-slate-900 truncate pr-2">{preset.title}</span>
-                      <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full shrink-0 ${
-                        preset.badge === "Critical Risk" ? "bg-rose-100 text-rose-800" :
-                        preset.badge === "High Risk" ? "bg-orange-100 text-orange-800" :
-                        preset.badge === "Verified Safe" ? "bg-emerald-100 text-emerald-800" :
-                        "bg-slate-200 text-slate-700"
-                      }`}>
-                        {preset.badge}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
-                      {preset.description}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* C. Transaction Expected Details Form */}
-          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                Transaction Expected Details (Optional)
-              </span>
-              <span className="text-[11px] text-slate-400 font-mono">Cross-Examination Parameters</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
               <div>
-                <label className="block text-slate-600 font-medium mb-1">Expected Amount (₹ INR)</label>
+                <label className="block text-slate-600 font-medium mb-1 text-[11px]">Expected Amount (₹)</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-slate-400 font-mono">₹</span>
+                  <span className="absolute left-2.5 top-2 text-slate-400 font-mono text-xs">₹</span>
                   <input
                     type="number"
                     step="0.01"
                     placeholder="e.g. 350.00"
                     value={expectedAmount}
                     onChange={(e) => setExpectedAmount(e.target.value)}
-                    className="w-full pl-7 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-mono focus:bg-white focus:border-blue-500 outline-none text-xs"
+                    className="w-full pl-6 pr-2.5 py-1.5 bg-slate-50 border border-slate-300/80 rounded-lg text-slate-900 font-mono focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-600 font-medium mb-1">Expected Recipient / Shop Name</label>
+                <label className="block text-slate-600 font-medium mb-1 text-[11px]">Expected Recipient Name</label>
                 <input
                   type="text"
-                  placeholder="e.g. Chai Point Mountain Trail"
+                  placeholder="e.g. Chai Point"
                   value={expectedRecipient}
                   onChange={(e) => setExpectedRecipient(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:border-blue-500 outline-none text-xs"
+                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300/80 rounded-lg text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-600 font-medium mb-1">Expected UPI ID / VPA</label>
+                <label className="block text-slate-600 font-medium mb-1 text-[11px]">Expected UPI ID / VPA</label>
                 <input
                   type="text"
-                  placeholder="e.g. chaipoint@yesbank"
+                  placeholder="e.g. merchant@upi"
                   value={expectedVpa}
                   onChange={(e) => setExpectedVpa(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-mono focus:bg-white focus:border-blue-500 outline-none text-xs"
+                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300/80 rounded-lg text-slate-900 font-mono focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-600 font-medium mb-1">Expected UTR / Ref (If Known)</label>
+                <label className="block text-slate-600 font-medium mb-1 text-[11px]">Expected UTR / Ref (If Known)</label>
                 <input
                   type="text"
                   placeholder="e.g. 430198274192"
                   value={expectedUtr}
                   onChange={(e) => setExpectedUtr(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-mono focus:bg-white focus:border-blue-500 outline-none text-xs"
+                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300/80 rounded-lg text-slate-900 font-mono focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs transition-colors"
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-slate-600 font-medium mb-1">Approximate Payment Timestamp</label>
+                <label className="block text-slate-600 font-medium mb-1 text-[11px]">Approximate Payment Timestamp</label>
                 <div className="relative">
-                  <Clock className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+                  <Clock className="w-3.5 h-3.5 absolute left-2.5 top-2 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="e.g. 15 Oct 2026, 07:15 PM"
+                    placeholder="e.g. Today, 07:15 PM"
                     value={approxTime}
                     onChange={(e) => setApproxTime(e.target.value)}
-                    className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:border-blue-500 outline-none text-xs"
+                    className="w-full pl-8 pr-2.5 py-1.5 bg-slate-50 border border-slate-300/80 rounded-lg text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs transition-colors"
                   />
                 </div>
               </div>
             </div>
 
             {/* Merchant Bank Confirmation Checkbox */}
-            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 flex items-start space-x-3 text-xs">
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 flex items-start space-x-2.5 text-xs">
               <input
                 id="merchant-settlement-check"
                 type="checkbox"
                 checked={merchantConfirmedCredit}
                 onChange={(e) => setMerchantConfirmedCredit(e.target.checked)}
-                className="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                className="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
               />
-              <label htmlFor="merchant-settlement-check" className="text-slate-700 cursor-pointer select-none">
-                <span className="font-semibold text-slate-900">Independent Bank Confirmation:</span> I have personally checked my official merchant app / bank account / SMS / soundbox and confirmed funds were credited.
+              <label htmlFor="merchant-settlement-check" className="text-slate-700 cursor-pointer select-none text-[11px] leading-relaxed">
+                <span className="font-semibold text-slate-900">Independent Credit Confirmation:</span> I verified fund receipt in my official merchant banking app, SMS, or soundbox.
               </label>
             </div>
 
             {/* Privacy Reminder */}
-            <div className="flex items-center space-x-2 text-[11px] text-slate-400 pt-1">
-              <Lock className="w-3.5 h-3.5 shrink-0" />
-              <span>Privacy Guard: Never enter or request customer UPI PINs, OTPs, or passwords.</span>
+            <div className="flex items-center space-x-1.5 text-[11px] text-slate-400">
+              <Lock className="w-3 h-3 shrink-0" />
+              <span>Privacy Guard: Never enter or request customer UPI PINs or OTPs.</span>
             </div>
 
             {/* Error Message */}
             {analysisError && (
-              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start space-x-2">
+              <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start space-x-2">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{analysisError}</span>
               </div>
@@ -879,16 +880,16 @@ export default function GhostPayDetectorPage({ prefilledData, setActivePage, onO
               type="button"
               disabled={isAnalyzing || (!capturedImage && !expectedAmount && !expectedUtr)}
               onClick={handleAnalyzePayment}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-sm rounded-xl flex items-center justify-center space-x-2 shadow-sm transition-all active:scale-[0.99]"
+              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-xs rounded-lg flex items-center justify-center space-x-2 shadow-sm transition-all active:scale-[0.99]"
             >
               {isAnalyzing ? (
                 <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Executing Multimodal Evidence Forensics...</span>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>Analyzing Forensic Evidence...</span>
                 </>
               ) : (
                 <>
-                  <Search className="w-4 h-4" />
+                  <Search className="w-3.5 h-3.5" />
                   <span>Analyse Payment Evidence</span>
                 </>
               )}
@@ -897,101 +898,72 @@ export default function GhostPayDetectorPage({ prefilledData, setActivePage, onO
         </div>
 
         {/* Right Column (5 cols): Contextual Results & Guide Panel */}
-        <div className="lg:col-span-5 space-y-6">
-          {/* If No Analysis Result Yet: Show How-to Guide & What We Analyze */}
+        <div className="lg:col-span-5 space-y-4">
+          {/* If No Analysis Result Yet: Show Compact Verification Protocol */}
           {!analysisResult ? (
-            <div className="space-y-6">
-              {/* How to use GhostPay */}
-              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
-                <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-slate-700">
+            <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <div className="flex items-center space-x-2">
                   <Info className="w-4 h-4 text-blue-600" />
-                  <span>How to use GhostPay Detector</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    Verification Protocol
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">Awaiting Evidence</span>
+              </div>
+
+              <div className="space-y-3 text-xs text-slate-600">
+                <div className="flex items-start space-x-2.5">
+                  <span className="w-5 h-5 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5 border border-blue-200">
+                    1
+                  </span>
+                  <p className="leading-relaxed">
+                    <strong className="text-slate-800">Acquire Evidence:</strong> Photograph customer payment display or upload a saved screenshot.
+                  </p>
                 </div>
 
-                <div className="space-y-3.5 text-xs text-slate-600">
-                  <div className="flex items-start space-x-3">
-                    <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">
-                      1
-                    </span>
-                    <p className="leading-relaxed">
-                      <strong className="text-slate-800">Capture or Upload:</strong> Take a photo of the customer's phone display, upload a screenshot, or select one of the demo presets.
-                    </p>
-                  </div>
+                <div className="flex items-start space-x-2.5">
+                  <span className="w-5 h-5 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5 border border-blue-200">
+                    2
+                  </span>
+                  <p className="leading-relaxed">
+                    <strong className="text-slate-800">Cross-Examine:</strong> Optionally enter expected amount, payee, or UTR to verify against extracted data.
+                  </p>
+                </div>
 
-                  <div className="flex items-start space-x-3">
-                    <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">
-                      2
-                    </span>
-                    <p className="leading-relaxed">
-                      <strong className="text-slate-800">Cross-Examine Details:</strong> Enter expected amount, payee name, or UTR to verify whether the displayed receipt matches reality.
-                    </p>
-                  </div>
-
-                  <div className="flex items-start space-x-3">
-                    <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">
-                      3
-                    </span>
-                    <p className="leading-relaxed">
-                      <strong className="text-slate-800">Forensic Verdict:</strong> Review OCR extractions, duplicate hash alerts, visual tampering flags, and independent settlement guidance.
-                    </p>
-                  </div>
+                <div className="flex items-start space-x-2.5">
+                  <span className="w-5 h-5 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5 border border-blue-200">
+                    3
+                  </span>
+                  <p className="leading-relaxed">
+                    <strong className="text-slate-800">Inspect Verdict:</strong> Review OCR extractions, visual tampering indicators, and settlement status.
+                  </p>
                 </div>
               </div>
 
-              {/* What We Analyze Checklist */}
-              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3.5">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-                  What we analyze
-                </span>
-
-                <ul className="space-y-2.5 text-xs text-slate-600">
-                  <li className="flex items-start space-x-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span>Multimodal OCR extraction of amount, recipient, and 12-digit UTR</span>
-                  </li>
-                  <li className="flex items-start space-x-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span>Cross-comparison with expected merchant name and UPI VPA</span>
-                  </li>
-                  <li className="flex items-start space-x-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span>Perceptual image dHash & SHA-256 duplicate evidence detection</span>
-                  </li>
-                  <li className="flex items-start space-x-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span>Image tampering & spoof app editing metadata inspection</span>
-                  </li>
-                  <li className="flex items-start space-x-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span>Independent bank settlement verification status disclosure</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Golden Rule of Merchant Safety */}
-              <div className="p-4 rounded-xl bg-slate-900 text-white space-y-2 shadow-sm">
-                <div className="flex items-center space-x-2 text-xs font-bold text-amber-400">
-                  <ShieldAlert className="w-4 h-4" />
-                  <span>Golden Security Rule</span>
+              <div className="p-3 rounded-lg bg-slate-900 text-white space-y-1.5 shadow-sm">
+                <div className="flex items-center space-x-1.5 text-xs font-semibold text-amber-400">
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <span>Merchant Safety Rule</span>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  Never dispense goods or approve refunds solely on a customer's phone screen. Fake UPI apps can simulate realistic success screens with sounds in under 3 seconds.
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  Never dispense goods solely on a customer's phone screen. Fake UPI apps can generate simulated payment success receipts in seconds. Always confirm credit via your merchant app or soundbox.
                 </p>
               </div>
             </div>
           ) : (
             /* Analysis Results Panel */
-            <div className="space-y-5">
+            <div className="space-y-4">
               {/* Overall Assessment Banner */}
               {(() => {
                 const style = getAssessmentStyle(analysisResult.overall_assessment);
                 const IconComponent = style.icon;
 
                 return (
-                  <div className={`p-4 rounded-xl border ${style.bg} ${style.border} space-y-2.5 shadow-sm`}>
+                  <div className={`p-3.5 rounded-xl border ${style.bg} ${style.border} space-y-2 shadow-sm`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <IconComponent className={`w-5 h-5 ${style.text}`} />
+                        <IconComponent className={`w-4 h-4 ${style.text}`} />
                         <span className={`text-xs font-bold uppercase tracking-wider ${style.text}`}>
                           {style.label}
                         </span>
@@ -1006,8 +978,8 @@ export default function GhostPayDetectorPage({ prefilledData, setActivePage, onO
                     </p>
 
                     <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
-                      <span className="text-slate-600 font-semibold">Recommended Action:</span>
-                      <span className="font-semibold text-slate-900 text-right max-w-xs truncate">
+                      <span className="text-slate-600 font-semibold text-[11px]">Recommended Action:</span>
+                      <span className="font-semibold text-slate-900 text-right max-w-xs truncate text-[11px]">
                         {analysisResult.recommended_action}
                       </span>
                     </div>
@@ -1016,7 +988,7 @@ export default function GhostPayDetectorPage({ prefilledData, setActivePage, onO
               })()}
 
               {/* Risk Gauge & Confidence Summary */}
-              <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3">
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm space-y-2.5">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
                     Forensic Risk Level
@@ -1026,9 +998,9 @@ export default function GhostPayDetectorPage({ prefilledData, setActivePage, onO
                   </span>
                 </div>
 
-                <div className="flex items-center justify-around py-2">
+                <div className="flex items-center justify-around py-1">
                   <RiskGauge score={analysisResult.risk_score} size="medium" />
-                  <div className="space-y-1.5 text-xs">
+                  <div className="space-y-1 text-xs">
                     <div className="flex items-center space-x-2">
                       <span className="text-slate-500">Verdict:</span>
                       <span className="font-bold text-slate-900">{analysisResult.prediction}</span>
@@ -1050,15 +1022,15 @@ export default function GhostPayDetectorPage({ prefilledData, setActivePage, onO
               </div>
 
               {/* Extracted Details Matrix */}
-              <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3">
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm space-y-2.5">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
                     Extracted Confirmation Fields
                   </span>
-                  <span className="text-[11px] text-slate-400 font-mono">OCR Extraction</span>
+                  <span className="text-[10px] text-slate-400 font-mono">OCR Extraction</span>
                 </div>
 
-                <div className="space-y-2 text-xs">
+                <div className="space-y-1.5 text-xs">
                   <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
                     <span className="text-slate-500 font-medium">Claimed Amount:</span>
                     <span className="font-mono font-bold text-slate-900 text-sm">
@@ -1110,43 +1082,13 @@ export default function GhostPayDetectorPage({ prefilledData, setActivePage, onO
                 </div>
               </div>
 
-              {/* Forensic Checklist & Indicators */}
-              <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-                  Analysis Verification Checklist
-                </span>
-
-                <div className="space-y-2">
-                  {analysisResult.analysis_checklist?.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="p-2.5 rounded-lg border flex items-start space-x-2.5 text-xs bg-slate-50 border-slate-100"
-                    >
-                      {item.status === "PASS" ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                      ) : item.status === "FAIL" ? (
-                        <XCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                      ) : item.status === "WARN" ? (
-                        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                      ) : (
-                        <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                      )}
-                      <div className="flex-1">
-                        <div className="font-semibold text-slate-800">{item.item}</div>
-                        <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{item.detail}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {/* Duplicate Evidence & Bank Provider Info */}
-              <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3 text-xs">
+              <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm space-y-2.5 text-xs">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
                   Fingerprint & Settlement Disclosure
                 </span>
 
-                <div className="space-y-2 text-[11px] text-slate-600">
+                <div className="space-y-1.5 text-[11px] text-slate-600">
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500">Image SHA-256:</span>
                     <span className="font-mono text-slate-700 truncate max-w-[200px]">
@@ -1177,7 +1119,7 @@ export default function GhostPayDetectorPage({ prefilledData, setActivePage, onO
                       const draft = `NATIONAL CYBERCRIME REPORT (1930) - FAKE PAYMENT SCREENSHOT / GHOSTPAY FRAUD\nIncident Date: ${new Date().toISOString()}\nClaimed Amount: ₹${analysisResult.extracted_details?.amount || expectedAmount}\nClaimed Recipient: ${analysisResult.extracted_details?.recipient_name || expectedRecipient}\nReported UTR: ${analysisResult.extracted_details?.utr_number || expectedUtr || 'N/A'}\nEvidence Summary: ${analysisResult.explanation}\nAudit ID: ${analysisResult.audit_id}`;
                       onOpenComplaintModal?.(draft);
                     }}
-                    className="w-full mt-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors"
+                    className="w-full mt-2.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors"
                   >
                     <FileText className="w-3.5 h-3.5" />
                     <span>Draft 1930 Cybercrime Incident Report</span>
