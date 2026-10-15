@@ -8,7 +8,8 @@ Branding: PaySentriX — "Every Payment has a story, We find the Truth"
 import os
 import sys
 import subprocess
-from fastapi import FastAPI, HTTPException, Query, BackgroundTasks
+import base64
+from fastapi import FastAPI, HTTPException, Query, BackgroundTasks, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Dict, Any, List, Optional
@@ -19,7 +20,7 @@ ROOT_DIR = os.path.dirname(BASE_DIR)
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-from backend.data.database import get_connection, init_db, seed_merchants
+from backend.data.database import get_connection, init_db, seed_merchants, seed_proofpay_data
 from backend.services.contract_service import contract_engine, PaymentPromise, PaymentExecution
 from backend.services.transaction_service import transaction_service
 from backend.services.nlp_service import nlp_service
@@ -29,6 +30,9 @@ from backend.services.anomaly_service import anomaly_service
 from backend.services.evolution_service import evolution_service
 from backend.services.audit_service import audit_service
 from backend.services.studio_service import studio_service
+from backend.services.proofpay_service import proofpay_orchestrator
+from backend.services.proofpay_ledger import challengepay_service
+from backend.services.proofpay_demo import demo_scenarios_provider
 
 app = FastAPI(
     title="PaySentriX Security Core API",
@@ -115,6 +119,21 @@ class EvolutionRequest(BaseModel):
     claimed_entity: str = ""
     is_held_out_type: bool = False
 
+class ProofPayOrderRequest(BaseModel):
+    merchant_id: str = "MERCH-SBUX-01"
+    customer_name: Optional[str] = "Walk-in Customer"
+    expected_amount: float = Field(..., gt=0)
+    recipient_vpa: str = "starbucks.pay@hdfcbank"
+
+class ProofPayVerifyRequest(BaseModel):
+    image_base64: str
+    filename: Optional[str] = "screenshot.jpg"
+    order_id: Optional[str] = None
+    expected_amount: Optional[float] = None
+    recipient_vpa: Optional[str] = None
+    merchant_id: Optional[str] = "MERCH-SBUX-01"
+    gemini_api_key: Optional[str] = None
+
 # --- Endpoints ---
 
 # 1. Health & Engine Status
@@ -133,6 +152,7 @@ def get_health():
             "multilingual_nlp_engine": "ONLINE (LinearSVC + TF-IDF, English/Hindi/Hinglish)",
             "ai_payment_contract_engine": "ONLINE (Direction Invariance & Predicate Logic)",
             "qr_guardian": "ONLINE (NPCI Payload, Merchant Registry & Gemini Vision)",
+            "proofpay_forensics": "ONLINE (AI Screenshot Forensics & ReplayGuard Active)",
             "ssrf_link_inspector": "ONLINE (RFC1918 Guard Active)"
         },
         "dataset_name": metrics.get("dataset_name", "PaySim Financial Mobile Money Benchmark"),
@@ -416,6 +436,145 @@ def retrain_models(background_tasks: BackgroundTasks):
         
     background_tasks.add_task(run_training_pipeline)
     return {"message": "Retraining job queued in background."}
+
+# ==============================================================================
+# PROOFPAY: AI PAYMENT SCREENSHOT FORENSICS & REPLAYGUARD ENDPOINTS
+# ==============================================================================
+
+# 15. ProofPay: Analyze Screenshot (Multipart File Upload or Base64 JSON)
+@app.post("/api/proofpay/analyze")
+async def proofpay_analyze(
+    file: Optional[UploadFile] = File(None),
+    order_id: Optional[str] = Form(None),
+    expected_amount: Optional[float] = Form(None),
+    recipient_vpa: Optional[str] = Form(None),
+    merchant_id: Optional[str] = Form(None),
+    gemini_api_key: Optional[str] = Form(None)
+):
+    """
+    Accepts screenshot upload via multipart/form-data.
+    Executes image forensics, Gemini multimodal extraction, ReplayGuard, and ledger check.
+    """
+    if not file:
+        raise HTTPException(status_code=400, detail="No screenshot file uploaded.")
+
+    content = await file.read()
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File exceeds 10 MB limit.")
+
+    try:
+        result = proofpay_orchestrator.full_analyze_and_verify(
+            image_bytes=content,
+            filename=file.filename or "screenshot.jpg",
+            order_id=order_id,
+            expected_amount=expected_amount,
+            recipient_vpa=recipient_vpa,
+            merchant_id=merchant_id,
+            custom_gemini_key=gemini_api_key
+        )
+        return result
+    except ValueError as val_err:
+        raise HTTPException(status_code=400, detail=str(val_err))
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=f"ProofPay analysis error: {str(err)}")
+
+# 16. ProofPay: Verify Screenshot (JSON Payload with Base64 Image)
+@app.post("/api/proofpay/verify")
+def proofpay_verify(req: ProofPayVerifyRequest):
+    """
+    Accepts Base64 image payload from demo lab or web client.
+    Executes full multi-engine forensic verification and authoritative ledger check.
+    """
+    raw_b64 = req.image_base64
+    if "," in raw_b64:
+        raw_b64 = raw_b64.split(",")[1]
+
+    try:
+        image_bytes = base64.b64decode(raw_b64)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid Base64 encoded image string.")
+
+    try:
+        result = proofpay_orchestrator.full_analyze_and_verify(
+            image_bytes=image_bytes,
+            filename=req.filename or "screenshot.jpg",
+            order_id=req.order_id,
+            expected_amount=req.expected_amount,
+            recipient_vpa=req.recipient_vpa,
+            merchant_id=req.merchant_id,
+            custom_gemini_key=req.gemini_api_key
+        )
+        return result
+    except ValueError as val_err:
+        raise HTTPException(status_code=400, detail=str(val_err))
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=f"Verification failure: {str(err)}")
+
+# 17. ProofPay: ChallengePay Order Creation
+@app.post("/api/proofpay/orders")
+def proofpay_create_order(req: ProofPayOrderRequest):
+    """Generates an unpredictable merchant order ID for ChallengePay verification."""
+    return challengepay_service.create_order(
+        merchant_id=req.merchant_id,
+        expected_amount=req.expected_amount,
+        recipient_vpa=req.recipient_vpa,
+        customer_name=req.customer_name
+    )
+
+# 18. ProofPay: List Recent Orders
+@app.get("/api/proofpay/orders")
+def proofpay_list_orders(merchant_id: Optional[str] = Query(None), limit: int = Query(20, ge=1, le=50)):
+    return challengepay_service.list_orders(merchant_id=merchant_id, limit=limit)
+
+# 19. ProofPay: Get Order Details
+@app.get("/api/proofpay/orders/{order_id}")
+def proofpay_get_order(order_id: str):
+    order = challengepay_service.get_order(order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found.")
+    return order
+
+# 20. ProofPay: Verification History
+@app.get("/api/proofpay/history")
+def proofpay_get_history(limit: int = Query(30, ge=1, le=100)):
+    return proofpay_orchestrator.get_history(limit=limit)
+
+# 21. ProofPay: Single Verification Audit Report
+@app.get("/api/proofpay/reports/{verification_id}")
+def proofpay_get_report(verification_id: str):
+    report = proofpay_orchestrator.get_report(verification_id)
+    if not report:
+        raise HTTPException(status_code=404, detail=f"Verification report '{verification_id}' not found.")
+    return report
+
+# 22. ProofPay: CyberCup Demo Lab Scenarios
+@app.get("/api/proofpay/demo/scenarios")
+def proofpay_demo_scenarios():
+    """Returns 5 seeded CyberCup test fixtures with synthetic receipt images."""
+    return demo_scenarios_provider.get_all_scenarios()
+
+# 23. ProofPay: Reset Demo Fixtures
+@app.post("/api/proofpay/demo/reset")
+def proofpay_demo_reset():
+    """Resets demo merchants, orders, and simulated ledger to clean state."""
+    seed_proofpay_data(reset=True)
+    return {"message": "ProofPay demo fixtures and merchant ledger successfully reset."}
+
+# 24. ProofPay: Simulated Merchant Ledger Table
+@app.get("/api/proofpay/ledger")
+def proofpay_get_ledger():
+    """Returns simulated merchant ledger transactions for demo auditing."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+    SELECT * FROM proofpay_ledger
+    ORDER BY transaction_timestamp DESC LIMIT 50
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
 
 if __name__ == "__main__":
     import uvicorn

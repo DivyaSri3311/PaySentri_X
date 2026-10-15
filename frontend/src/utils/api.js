@@ -8,15 +8,20 @@ const API_BASE_URL = "http://localhost:8000";
 async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
   try {
+    const headers = { ...options.headers };
+    if (!(options.body instanceof FormData)) {
+      if (!headers["Content-Type"]) {
+        headers["Content-Type"] = "application/json";
+      }
+    }
     const res = await fetch(url, {
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
       ...options,
+      headers,
     });
     if (!res.ok) {
-      throw new Error(`API HTTP Error: ${res.status} ${res.statusText}`);
+      const errBody = await res.json().catch(() => null);
+      const detail = errBody?.detail || res.statusText;
+      throw new Error(`API Error (${res.status}): ${detail}`);
     }
     return await res.json();
   } catch (err) {
@@ -176,5 +181,62 @@ export const api = {
   // Retrain
   retrainModels: async () => {
     return await request("/api/admin/retrain", { method: "POST" });
+  },
+
+  // ProofPay: AI Payment Screenshot Forensics
+  proofpay: {
+    analyzeScreenshot: async (formData) => {
+      return await request("/api/proofpay/analyze", {
+        method: "POST",
+        body: formData,
+      });
+    },
+
+    verifyPayment: async (payload) => {
+      return await request("/api/proofpay/verify", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    },
+
+    createOrder: async (orderData) => {
+      return await request("/api/proofpay/orders", {
+        method: "POST",
+        body: JSON.stringify(orderData),
+      });
+    },
+
+    getOrder: async (orderId) => {
+      return await request(`/api/proofpay/orders/${orderId}`);
+    },
+
+    getHistory: async (params = {}) => {
+      const q = new URLSearchParams();
+      if (params.merchant_id) q.append("merchant_id", params.merchant_id);
+      if (params.limit) q.append("limit", params.limit);
+      if (params.offset) q.append("offset", params.offset);
+      return await request(`/api/proofpay/history?${q.toString()}`);
+    },
+
+    getReport: async (reportId) => {
+      return await request(`/api/proofpay/reports/${reportId}`);
+    },
+
+    getScenarios: async () => {
+      return await request("/api/proofpay/demo/scenarios");
+    },
+
+    resetDemo: async () => {
+      return await request("/api/proofpay/demo/reset", {
+        method: "POST",
+      });
+    },
+
+    getLedger: async (params = {}) => {
+      const q = new URLSearchParams();
+      if (params.merchant_id) q.append("merchant_id", params.merchant_id);
+      if (params.limit) q.append("limit", params.limit);
+      return await request(`/api/proofpay/ledger?${q.toString()}`);
+    },
   }
 };

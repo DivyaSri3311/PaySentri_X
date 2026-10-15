@@ -20,6 +20,7 @@ export const NAVIGATION_ITEMS = [
   { id: "message-intel", label: "Message Intelligence", icon: "MessageSquareWarning" },
   { id: "link-scanner", label: "Payment Link Scanner", icon: "Link2" },
   { id: "qr-guardian", label: "QR Guardian", icon: "QrCode" },
+  { id: "proofpay", label: "ProofPay Forensics", icon: "FileCheck", badge: "CC6 AI", highlight: true },
   { id: "fraud-evolution", label: "Fraud Evolution Lab", icon: "Cpu" },
   { id: "data-science-studio", label: "Data Science Studio", icon: "BarChart3" },
   { id: "audit-history", label: "Audit History", icon: "FileText" },

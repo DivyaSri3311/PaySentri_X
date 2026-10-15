@@ -55,6 +55,85 @@ def init_db():
         police_draft TEXT
     )
     """)
+
+    # 3. ProofPay: Merchants
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS proofpay_merchants (
+        merchant_id TEXT PRIMARY KEY,
+        merchant_name TEXT NOT NULL,
+        registered_vpa TEXT NOT NULL,
+        created_at TEXT NOT NULL
+    )
+    """)
+
+    # 4. ProofPay: ChallengePay Merchant Orders
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS proofpay_orders (
+        order_id TEXT PRIMARY KEY,
+        merchant_id TEXT NOT NULL,
+        customer_name TEXT,
+        expected_amount REAL NOT NULL,
+        currency TEXT DEFAULT 'INR',
+        recipient_vpa TEXT NOT NULL,
+        status TEXT DEFAULT 'PENDING',
+        confirmed_reference TEXT,
+        created_at TEXT NOT NULL,
+        expires_at TEXT
+    )
+    """)
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_merchant ON proofpay_orders(merchant_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_status ON proofpay_orders(status)")
+
+    # 5. ProofPay: Authoritative Simulated Merchant Payment Ledger
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS proofpay_ledger (
+        id TEXT PRIMARY KEY,
+        order_id TEXT,
+        merchant_id TEXT NOT NULL,
+        recipient_vpa TEXT NOT NULL,
+        amount REAL NOT NULL,
+        currency TEXT DEFAULT 'INR',
+        transaction_reference TEXT UNIQUE,
+        transaction_timestamp TEXT NOT NULL,
+        payment_status TEXT NOT NULL,
+        settled_at TEXT,
+        payment_provider TEXT NOT NULL,
+        simulation_mode INTEGER DEFAULT 1
+    )
+    """)
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_ledger_ref ON proofpay_ledger(transaction_reference)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_ledger_order ON proofpay_ledger(order_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_ledger_merchant ON proofpay_ledger(merchant_id)")
+
+    # 6. ProofPay: Verifications & ReplayGuard Vault
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS proofpay_verifications (
+        verification_id TEXT PRIMARY KEY,
+        order_id TEXT,
+        merchant_id TEXT NOT NULL,
+        sha256_hash TEXT NOT NULL,
+        phash TEXT NOT NULL,
+        claimed_amount REAL,
+        claimed_status TEXT,
+        claimed_reference TEXT,
+        claimed_sender TEXT,
+        claimed_receiver TEXT,
+        payment_app TEXT,
+        visual_integrity TEXT NOT NULL,
+        payment_verification TEXT NOT NULL,
+        recommended_action TEXT NOT NULL,
+        findings_json TEXT NOT NULL,
+        anomaly_regions_json TEXT NOT NULL,
+        forensic_metrics_json TEXT NOT NULL,
+        explanation TEXT NOT NULL,
+        tamper_audit_token TEXT NOT NULL,
+        created_at TEXT NOT NULL
+    )
+    """)
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_verif_sha ON proofpay_verifications(sha256_hash)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_verif_phash ON proofpay_verifications(phash)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_verif_ref ON proofpay_verifications(claimed_reference)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_verif_order ON proofpay_verifications(order_id)")
     
     conn.commit()
     conn.close()
@@ -179,6 +258,98 @@ def seed_initial_audit_records():
         conn.commit()
     conn.close()
 
+def seed_proofpay_data(reset: bool = False):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    if reset:
+        cursor.execute("DELETE FROM proofpay_merchants")
+        cursor.execute("DELETE FROM proofpay_orders")
+        cursor.execute("DELETE FROM proofpay_ledger")
+        cursor.execute("DELETE FROM proofpay_verifications")
+
+    # 1. Demo Merchants
+    merchants = [
+        ("MERCH-SBUX-01", "Starbucks Coffee India", "starbucks.pay@hdfcbank", "2026-10-01T08:00:00Z"),
+        ("MERCH-CHAI-02", "Chai Point Bangalore", "chaipoint@yesbank", "2026-10-01T08:00:00Z"),
+        ("MERCH-TECH-03", "Apex Digital Electronics", "apextech@icici", "2026-10-01T08:00:00Z")
+    ]
+    for m in merchants:
+        cursor.execute("""
+        INSERT OR REPLACE INTO proofpay_merchants (merchant_id, merchant_name, registered_vpa, created_at)
+        VALUES (?, ?, ?, ?)
+        """, m)
+
+    # 2. ChallengePay Merchant Orders
+    orders = [
+        ("ORD-882391", "MERCH-SBUX-01", "Rahul Sharma", 8500.0, "INR", "starbucks.pay@hdfcbank", "PENDING", None, "2026-10-15T10:00:00Z", "2026-10-15T12:00:00Z"),
+        ("ORD-771201", "MERCH-SBUX-01", "Vikram Malhotra", 8500.0, "INR", "starbucks.pay@hdfcbank", "CONFIRMED", "428910293841", "2026-10-14T11:00:00Z", "2026-10-14T13:00:00Z"),
+        ("ORD-554109", "MERCH-SBUX-01", "Anita Desai", 8500.0, "INR", "starbucks.pay@hdfcbank", "PENDING", None, "2026-10-15T10:30:00Z", "2026-10-15T12:30:00Z"),
+        ("ORD-332918", "MERCH-CHAI-02", "Priya Rao", 140.0, "INR", "chaipoint@yesbank", "PENDING", None, "2026-10-15T11:00:00Z", "2026-10-15T13:00:00Z")
+    ]
+    for o in orders:
+        cursor.execute("""
+        INSERT OR REPLACE INTO proofpay_orders 
+        (order_id, merchant_id, customer_name, expected_amount, currency, recipient_vpa, status, confirmed_reference, created_at, expires_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, o)
+
+    # 3. Authoritative Simulated Merchant Ledger Entries
+    ledger_entries = [
+        # Scenario B ledger record (Yesterday's real fulfilled payment)
+        ("LEDGER-TX-B201", "ORD-771201", "MERCH-SBUX-01", "starbucks.pay@hdfcbank", 8500.0, "INR", "428910293841", "2026-10-14T11:15:22Z", "SUCCESS", "2026-10-14T11:15:25Z", "HDFC_MERCHANT_RAIL", 1),
+        
+        # Scenario D ledger record (Genuine match for ORD-882391)
+        ("LEDGER-TX-D401", "ORD-882391", "MERCH-SBUX-01", "starbucks.pay@hdfcbank", 8500.0, "INR", "429981273910", "2026-10-15T10:14:02Z", "SUCCESS", "2026-10-15T10:14:05Z", "HDFC_MERCHANT_RAIL", 1),
+        
+        # Scenario E ledger record (Pending settlement)
+        ("LEDGER-TX-E501", "ORD-554109", "MERCH-SBUX-01", "starbucks.pay@hdfcbank", 8500.0, "INR", "429981273955", "2026-10-15T10:31:18Z", "PENDING", None, "HDFC_MERCHANT_RAIL", 1),
+        
+        # Scenario A ledger record (Merchant only received ₹850, not ₹8,500!)
+        ("LEDGER-TX-A101", "ORD-110294", "MERCH-SBUX-01", "starbucks.pay@hdfcbank", 850.0, "INR", "429981273988", "2026-10-15T09:45:10Z", "SUCCESS", "2026-10-15T09:45:12Z", "HDFC_MERCHANT_RAIL", 1)
+    ]
+    for le in ledger_entries:
+        cursor.execute("""
+        INSERT OR REPLACE INTO proofpay_ledger 
+        (id, order_id, merchant_id, recipient_vpa, amount, currency, transaction_reference, transaction_timestamp, payment_status, settled_at, payment_provider, simulation_mode)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, le)
+
+    # 4. Seed an existing verification proof for ReplayGuard demo (Scenario B)
+    cursor.execute("SELECT COUNT(*) FROM proofpay_verifications WHERE claimed_reference = '428910293841'")
+    if cursor.fetchone()[0] == 0:
+        cursor.execute("""
+        INSERT INTO proofpay_verifications 
+        (verification_id, order_id, merchant_id, sha256_hash, phash, claimed_amount, claimed_status, claimed_reference, claimed_sender, claimed_receiver, payment_app, visual_integrity, payment_verification, recommended_action, findings_json, anomaly_regions_json, forensic_metrics_json, explanation, tamper_audit_token, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "VRF-HIST-20261014-001",
+            "ORD-771201",
+            "MERCH-SBUX-01",
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "a1b2c3d4e5f60718",
+            8500.0,
+            "SUCCESS",
+            "428910293841",
+            "Vikram Malhotra",
+            "Starbucks Coffee",
+            "Google Pay",
+            "NO_OBVIOUS_ANOMALIES",
+            "CONFIRMED",
+            "FULFILL_ORDER",
+            json.dumps([{"engine": "merchant_ledger", "severity": "info", "message": "Matched ledger record LEDGER-TX-B201"}]),
+            json.dumps([]),
+            json.dumps({"ela_max_delta": 4.2, "noise_variance": 12.1}),
+            "Authentic transaction confirmed yesterday against order ORD-771201.",
+            "SHA256:PROOFAUDIT_HASHCHAIN_771201",
+            "2026-10-14T11:16:00Z"
+        ))
+
+    conn.commit()
+    conn.close()
+    print("ProofPay demo merchants, orders, and ledger entries seeded successfully.")
+
 if __name__ == "__main__":
     init_db()
     seed_merchants()
+    seed_proofpay_data()

@@ -12,6 +12,7 @@ import {
   FileText,
   Sliders,
   ShieldCheck,
+  FileCheck,
   X
 } from "lucide-react";
 import { NAVIGATION_ITEMS } from "../utils/constants";
@@ -24,6 +25,7 @@ const ICON_MAP = {
   MessageSquareWarning,
   Link2,
   QrCode,
+  FileCheck,
   Cpu,
   BarChart3,
   FileText,
