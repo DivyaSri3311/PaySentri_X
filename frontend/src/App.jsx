@@ -12,6 +12,7 @@ import AIPaymentContractPage from "./pages/AIPaymentContractPage";
 import MessageIntelligencePage from "./pages/MessageIntelligencePage";
 import PaymentLinkScannerPage from "./pages/PaymentLinkScannerPage";
 import QRGuardianPage from "./pages/QRGuardianPage";
+import GhostPayDetectorPage from "./pages/GhostPayDetectorPage";
 import FraudEvolutionLabPage from "./pages/FraudEvolutionLabPage";
 import DataScienceStudioPage from "./pages/DataScienceStudioPage";
 import AuditHistoryPage from "./pages/AuditHistoryPage";
@@ -113,7 +114,19 @@ export default function App() {
           )}
 
           {activePage === "qr-guardian" && (
-            <QRGuardianPage prefilledData={prefilledData} />
+            <QRGuardianPage
+              prefilledData={prefilledData}
+              setActivePage={setActivePage}
+              onOpenComplaintModal={openComplaintModal}
+            />
+          )}
+
+          {activePage === "ghostpay-detector" && (
+            <GhostPayDetectorPage
+              prefilledData={prefilledData}
+              setActivePage={setActivePage}
+              onOpenComplaintModal={openComplaintModal}
+            />
           )}
 
           {activePage === "fraud-evolution" && (

@@ -55,7 +55,89 @@ def init_db():
         police_draft TEXT
     )
     """)
+
+    # 3. GhostPay Evidence Registry (Duplicate detection & image hash tracking)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS ghostpay_evidence_registry (
+        id TEXT PRIMARY KEY,
+        timestamp TEXT NOT NULL,
+        image_sha256 TEXT NOT NULL,
+        image_dhash TEXT NOT NULL,
+        utr_number TEXT,
+        amount REAL,
+        recipient_vpa TEXT,
+        assessment TEXT NOT NULL
+    )
+    """)
     
+    conn.commit()
+    conn.close()
+
+def check_duplicate_evidence(image_sha256: str, image_dhash: str, utr_number: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Checks if identical image hash or identical UTR has been previously analyzed.
+    Ignores placeholder / empty image hashes.
+    """
+    if not image_sha256 or image_sha256 in ("NO_IMAGE", "NONE", "0000000000000000"):
+        return {
+            "exact_duplicate_image": None,
+            "perceptual_duplicate_image": None,
+            "duplicate_utr": None,
+        }
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # 1. Exact SHA-256 match
+    cursor.execute("SELECT * FROM ghostpay_evidence_registry WHERE image_sha256 = ? ORDER BY timestamp DESC LIMIT 1", (image_sha256,))
+    exact_hash = cursor.fetchone()
+
+    # 2. Perceptual dHash match (exact match on 16-char hex)
+    cursor.execute("SELECT * FROM ghostpay_evidence_registry WHERE image_dhash = ? AND image_sha256 != ? ORDER BY timestamp DESC LIMIT 1", (image_dhash, image_sha256))
+    perceptual_hash = cursor.fetchone()
+
+    # 3. UTR duplicate check
+    utr_match = None
+    if utr_number and len(utr_number) >= 8:
+        cursor.execute("SELECT * FROM ghostpay_evidence_registry WHERE utr_number = ? ORDER BY timestamp DESC LIMIT 1", (utr_number,))
+        utr_match = cursor.fetchone()
+
+    conn.close()
+
+    return {
+        "exact_duplicate_image": dict(exact_hash) if exact_hash else None,
+        "perceptual_duplicate_image": dict(perceptual_hash) if perceptual_hash else None,
+        "duplicate_utr": dict(utr_match) if utr_match else None,
+    }
+
+def record_ghostpay_evidence(
+    record_id: str,
+    image_sha256: str,
+    image_dhash: str,
+    utr_number: Optional[str],
+    amount: Optional[float],
+    recipient_vpa: Optional[str],
+    assessment: str
+):
+    """
+    Stores evidence fingerprint for duplicate detection without persisting full screenshot.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+    INSERT OR REPLACE INTO ghostpay_evidence_registry
+    (id, timestamp, image_sha256, image_dhash, utr_number, amount, recipient_vpa, assessment)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        record_id,
+        datetime.utcnow().isoformat() + "Z",
+        image_sha256,
+        image_dhash,
+        utr_number,
+        amount,
+        recipient_vpa,
+        assessment
+    ))
     conn.commit()
     conn.close()
 

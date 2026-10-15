@@ -133,6 +133,7 @@ export default function AuditHistoryPage({ onOpenAuditDetail, onOpenComplaintMod
             <option value="MESSAGE">Message Intelligence</option>
             <option value="LINK">Payment Link</option>
             <option value="QR">QR Guardian</option>
+            <option value="GHOSTPAY">GhostPay Detector</option>
             <option value="EVOLUTION">Evolution Lab</option>
           </select>
 

@@ -5,7 +5,7 @@ import {
   Camera,
   CameraOff,
   CheckCircle,
-  XCircle,
+  CheckCircle2,
   AlertTriangle,
   ShieldCheck,
   ShieldAlert,
@@ -14,18 +14,17 @@ import {
   Key,
   Eye,
   EyeOff,
-  Bot,
   RefreshCw,
   SwitchCamera,
-  Layers,
   ExternalLink,
+  Info,
   Copy,
   Check,
-  Zap,
-  Info,
-  CheckCircle2,
+  ChevronDown,
   BarChart2,
-  Lock,
+  Zap,
+  FileText,
+  Receipt,
   ArrowRight
 } from "lucide-react";
 import jsQR from "jsqr";
@@ -35,21 +34,21 @@ import standeeImg from "../assets/bhim_upi_counter_standee.jpg";
 
 const PRESET_QR_SCENARIOS = [
   {
-    title: "Starbucks Swapped QR Scam",
+    title: "Starbucks Counter Swapped QR Scam",
     tag: "Physical Tampering",
     claimed_brand: "Tata Starbucks Pvt Ltd",
     qr_text: "upi://pay?pa=raju.kumar78@okaxis&pn=Raju%20Kumar&mc=0000&mode=02",
     pos_signature: ""
   },
   {
-    title: "Genuine Starbucks Signed QR",
+    title: "Genuine Starbucks Cryptographically Signed QR",
     tag: "Verified Enterprise",
     claimed_brand: "Tata Starbucks Pvt Ltd",
     qr_text: "upi://pay?pa=starbucks.pay@hdfcbank&pn=Tata%20Starbucks%20Pvt%20Ltd&mc=5814&am=380.00&mode=01&sign=SIG_POS_AUTH_TATA_SBUX_ED25519_99812",
     pos_signature: "SIG_POS_AUTH_TATA_SBUX_ED25519_99812"
   },
   {
-    title: "Genuine Zomato Dynamic QR",
+    title: "Genuine Zomato Delivery Dynamic QR",
     tag: "Verified Enterprise",
     claimed_brand: "Zomato India Ltd",
     qr_text: "upi://pay?pa=zomato@icici&pn=Zomato%20India%20Ltd&mc=5812&am=540.00&mode=01&sign=SIG_POS_AUTH_ZOMATO_ED25519_8819",
@@ -80,12 +79,12 @@ function playScanBeep() {
     gain.connect(ctx.destination);
     osc.start();
     osc.stop(ctx.currentTime + 0.15);
-  } catch (e) {
-    // Ignore audio permission block
+  } catch {
+    // Ignore audio block
   }
 }
 
-export default function QRGuardianPage({ prefilledData }) {
+export default function QRGuardianPage({ prefilledData, setActivePage, onOpenComplaintModal }) {
   const [activeInputMode, setActiveInputMode] = useState("camera"); // "camera" | "upload"
   const [qrText, setQrText] = useState(
     prefilledData?.qr_text || PRESET_QR_SCENARIOS[0].qr_text
@@ -100,17 +99,18 @@ export default function QRGuardianPage({ prefilledData }) {
     () => localStorage.getItem("paysentrix_gemini_api_key") || ""
   );
   const [showApiKey, setShowApiKey] = useState(false);
+  const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
+  const [showPresetDropdown, setShowPresetDropdown] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [imagePreview, setImagePreview] = useState(standeeImg);
-  const [copied, setCopied] = useState(false);
-  const [torchOn, setTorchOn] = useState(false);
-  const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
 
   // Live Camera Scanner States
   const [isScanning, setIsScanning] = useState(false);
   const [cameraError, setCameraError] = useState(null);
-  const [facingMode, setFacingMode] = useState("environment"); // "environment" | "user"
+  const [facingMode, setFacingMode] = useState("environment");
+  const [torchOn, setTorchOn] = useState(false);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -121,21 +121,6 @@ export default function QRGuardianPage({ prefilledData }) {
   const handleSaveApiKey = (val) => {
     setGeminiApiKey(val);
     localStorage.setItem("paysentrix_gemini_api_key", val);
-  };
-
-  const stopCamera = () => {
-    if (animFrameRef.current) {
-      cancelAnimationFrame(animFrameRef.current);
-      animFrameRef.current = null;
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-    setIsScanning(false);
   };
 
   useEffect(() => {
@@ -171,11 +156,27 @@ export default function QRGuardianPage({ prefilledData }) {
       console.error("Camera access failed:", err);
       setCameraError(
         err.name === "NotAllowedError"
-          ? "Camera permission was denied. Please allow camera access in your browser."
+          ? "Camera permission denied. Allow camera in browser settings."
           : `Camera error: ${err.message || "No camera device found."}`
       );
       setIsScanning(false);
     }
+  };
+
+  const stopCamera = () => {
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setIsScanning(false);
+    setTorchOn(false);
   };
 
   const toggleFacingMode = () => {
@@ -187,49 +188,42 @@ export default function QRGuardianPage({ prefilledData }) {
   };
 
   const toggleFlash = async () => {
-    try {
-      if (streamRef.current) {
-        const track = streamRef.current.getVideoTracks()[0];
-        const capabilities = track.getCapabilities?.() || {};
-        if (capabilities.torch) {
-          const nextState = !torchOn;
-          await track.applyConstraints({
-            advanced: [{ torch: nextState }]
-          });
-          setTorchOn(nextState);
-        } else {
-          setTorchOn(!torchOn);
-        }
-      } else {
+    if (!streamRef.current) {
+      setTorchOn(!torchOn);
+      return;
+    }
+    const track = streamRef.current.getVideoTracks()[0];
+    if (track && track.getCapabilities && track.getCapabilities().torch) {
+      try {
+        await track.applyConstraints({
+          advanced: [{ torch: !torchOn }]
+        });
+        setTorchOn(!torchOn);
+      } catch (e) {
+        console.warn("Torch constraint failed", e);
         setTorchOn(!torchOn);
       }
-    } catch (e) {
-      console.warn("Torch not supported:", e);
+    } else {
       setTorchOn(!torchOn);
     }
   };
 
   const captureFrameNow = () => {
-    if (!videoRef.current) return;
-    const video = videoRef.current;
-    const canvas = canvasRef.current || document.createElement("canvas");
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const snapshot = canvas.toDataURL("image/jpeg", 0.85);
-    setImagePreview(snapshot);
-    stopCamera();
-
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(imageData.data, imageData.width, imageData.height);
-    if (code && code.data) {
+    if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current || document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const snapshot = canvas.toDataURL("image/jpeg", 0.85);
+      setImagePreview(snapshot);
       playScanBeep();
-      setQrText(code.data);
-      runVerification(code.data, snapshot);
-    } else {
+      stopCamera();
       runVerification(qrText, snapshot);
+    } else {
+      // Trigger verification using active preview
+      runVerification(qrText, imagePreview);
     }
   };
 
@@ -268,10 +262,10 @@ export default function QRGuardianPage({ prefilledData }) {
     if (!textToVerify.trim()) return;
     setLoading(true);
     try {
-      // Don't send large static asset URL directly if it's not data:image
-      const imagePayload = (typeof snapshotToVerify === "string" && snapshotToVerify.startsWith("data:image"))
-        ? snapshotToVerify
-        : null;
+      const imagePayload =
+        typeof snapshotToVerify === "string" && snapshotToVerify.startsWith("data:image")
+          ? snapshotToVerify
+          : null;
 
       const res = await api.verifyQR(
         textToVerify,
@@ -281,6 +275,20 @@ export default function QRGuardianPage({ prefilledData }) {
         geminiApiKey || null
       );
       setResult(res);
+
+      try {
+        localStorage.setItem(
+          "paysentrix_last_qr_context",
+          JSON.stringify({
+            qr_text: textToVerify,
+            merchant_name: res.parsed_payload?.merchant_name || claimedBrand,
+            vpa: res.parsed_payload?.vpa,
+            amount: res.parsed_payload?.amount
+          })
+        );
+      } catch {
+        // Storage non-fatal
+      }
     } catch (err) {
       console.error("QR verification failed:", err);
     } finally {
@@ -342,45 +350,48 @@ export default function QRGuardianPage({ prefilledData }) {
 
   return (
     <div className="space-y-6">
-      {/* Main Container Grid matching Screenshot 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Central Workspace (7-8 cols) */}
-        <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-5">
-          {/* Workspace Header */}
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center space-x-2">
-                <h1 className="text-xl font-bold text-slate-900 font-heading">
-                  QR Guardian
-                </h1>
-              </div>
-              <p className="text-xs text-slate-500">
-                Scan or upload any UPI QR code to verify merchant identity, detect tampering, and analyze risks.
-              </p>
-            </div>
-
-            {/* NPCI Compliant Badge matching Screenshot 2 */}
-            <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>NPCI Compliant</span>
-            </span>
+      {/* Top Page Header matching Screenshot 1 */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center space-x-3.5">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm shrink-0">
+            <QrCode className="w-5 h-5 text-white" />
           </div>
+          <div>
+            <div className="flex items-center space-x-2.5">
+              <h1 className="text-xl sm:text-2xl font-bold font-heading text-slate-900 tracking-tight">
+                QR Guardian
+              </h1>
+              <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span>NPCI Compliant</span>
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+              Scan or upload any UPI QR code to verify <strong className="font-semibold text-slate-700">merchant</strong> identity, detect tampering, and analyze risks.
+            </p>
+          </div>
+        </div>
+      </div>
 
-          {/* Mode Switcher Tabs matching Screenshot 2 */}
-          <div className="flex items-center space-x-2">
+      {/* Main 2-Column Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column (7 Cols) */}
+        <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+          {/* Top Tabs */}
+          <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => {
                 setActiveInputMode("camera");
                 if (!isScanning) startCamera();
               }}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                 activeInputMode === "camera"
-                  ? "bg-blue-600 text-white shadow-sm"
+                  ? "bg-blue-600 text-white shadow-sm hover:bg-blue-700"
                   : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
               }`}
             >
-              <Camera className="w-3.5 h-3.5" />
+              <Camera className="w-4 h-4" />
               <span>Live Camera</span>
             </button>
 
@@ -391,34 +402,19 @@ export default function QRGuardianPage({ prefilledData }) {
                 setActiveInputMode("upload");
                 fileInputRef.current?.click();
               }}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                 activeInputMode === "upload"
-                  ? "bg-blue-600 text-white shadow-sm"
+                  ? "bg-blue-600 text-white shadow-sm hover:bg-blue-700"
                   : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
               }`}
             >
-              <Upload className="w-3.5 h-3.5" />
+              <Upload className="w-4 h-4" />
               <span>Upload Image</span>
             </button>
-
-            {/* Quick Presets Toggle button */}
-            <div className="ml-auto flex items-center space-x-1">
-              {PRESET_QR_SCENARIOS.slice(0, 2).map((p, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => loadPreset(p)}
-                  className="hidden sm:inline-block px-2.5 py-1 text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-                >
-                  {p.claimed_brand.includes("Starbucks") && p.tag.includes("Tampering")
-                    ? "Tampered Demo"
-                    : "Genuine Demo"}
-                </button>
-              ))}
-            </div>
           </div>
 
-          {/* Camera Viewport matching Screenshot 2 */}
-          <div className="relative w-full h-72 sm:h-80 bg-slate-900 rounded-xl overflow-hidden border border-slate-200 flex items-center justify-center">
+          {/* Camera Viewfinder Card */}
+          <div className="relative w-full h-[280px] sm:h-[330px] bg-slate-950 rounded-2xl overflow-hidden border border-slate-200 flex items-center justify-center shadow-inner group">
             {/* Live Video Stream */}
             <video
               ref={videoRef}
@@ -428,78 +424,72 @@ export default function QRGuardianPage({ prefilledData }) {
             />
             <canvas ref={canvasRef} className="hidden" />
 
-            {/* If camera is not active, display preview image (default bhim_upi_counter_standee.jpg or uploaded) */}
+            {/* Standby / Captured Preview Standee Photo */}
             {!isScanning && (
               <img
                 src={imagePreview || standeeImg}
-                alt="Standee Preview"
+                alt="Countertop UPI QR Standee"
                 className="w-full h-full object-cover"
               />
             )}
 
-            {/* Targeting Scan Bracket Corners matching Screenshot 2 */}
-            <div className="absolute inset-0 pointer-events-none">
-              {/* Top-Left Bracket */}
-              <span className="absolute top-6 left-12 w-6 h-6 border-t-2 border-l-2 border-white shadow-sm" />
-              {/* Top-Right Bracket */}
-              <span className="absolute top-6 right-12 w-6 h-6 border-t-2 border-r-2 border-white shadow-sm" />
-              {/* Bottom-Left Bracket */}
-              <span className="absolute bottom-16 left-12 w-6 h-6 border-b-2 border-l-2 border-white shadow-sm" />
-              {/* Bottom-Right Bracket */}
-              <span className="absolute bottom-16 right-12 w-6 h-6 border-b-2 border-r-2 border-white shadow-sm" />
+            {/* 4 White Corner Brackets Framing Target */}
+            <div className="absolute inset-0 pointer-events-none p-8 sm:p-12 flex items-center justify-center">
+              <div className="relative w-48 h-48 sm:w-56 sm:h-56">
+                {/* Top-Left Bracket */}
+                <span className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-white rounded-tl shadow" />
+                {/* Top-Right Bracket */}
+                <span className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-white rounded-tr shadow" />
+                {/* Bottom-Left Bracket */}
+                <span className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-white rounded-bl shadow" />
+                {/* Bottom-Right Bracket */}
+                <span className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-white rounded-br shadow" />
+              </div>
             </div>
 
-            {/* Floating Translucent Controls at Bottom Center matching Screenshot 2 */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center space-x-4 z-20">
-              {/* Flip Button */}
+            {/* Floating Translucent Controls at Bottom Center */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md rounded-full px-6 py-2 flex items-center gap-7 border border-white/15 text-white z-20 shadow-lg">
               <button
                 type="button"
                 onClick={toggleFacingMode}
-                className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex flex-col items-center justify-center hover:bg-black/60 transition-colors shadow"
+                className="flex flex-col items-center gap-0.5 text-slate-300 hover:text-white transition-colors"
                 title="Flip Camera"
               >
                 <SwitchCamera className="w-4 h-4" />
-                <span className="text-[9px] font-medium leading-none mt-0.5">Flip</span>
+                <span className="text-[10px] font-medium leading-none">Flip</span>
               </button>
 
-              {/* Shutter / Capture Button */}
               <button
                 type="button"
-                onClick={() => {
-                  if (isScanning) {
-                    captureFrameNow();
-                  } else {
-                    startCamera();
-                  }
-                }}
-                className="w-12 h-12 rounded-full bg-blue-600 border-2 border-white text-white flex items-center justify-center shadow-lg hover:bg-blue-700 active:scale-95 transition-all"
+                onClick={captureFrameNow}
+                className="w-11 h-11 rounded-full border-2 border-white flex items-center justify-center bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all shadow-md"
                 title="Capture Scan"
               >
-                <span className="w-3.5 h-3.5 rounded-full bg-white" />
+                <span className="w-4 h-4 rounded-full bg-white" />
               </button>
 
-              {/* Flash Button */}
               <button
                 type="button"
                 onClick={toggleFlash}
-                className={`w-10 h-10 rounded-full backdrop-blur-md border border-white/20 text-white flex flex-col items-center justify-center transition-colors shadow ${
-                  torchOn ? "bg-amber-500/80" : "bg-black/40 hover:bg-black/60"
+                className={`flex flex-col items-center gap-0.5 transition-colors ${
+                  torchOn ? "text-amber-400" : "text-slate-300 hover:text-white"
                 }`}
-                title="Flash Toggle"
+                title="Flash"
               >
                 <Zap className="w-4 h-4" />
-                <span className="text-[9px] font-medium leading-none mt-0.5">Flash</span>
+                <span className="text-[10px] font-medium leading-none">Flash</span>
               </button>
             </div>
 
             {/* Camera error message */}
             {cameraError && (
-              <div className="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center z-30">
+              <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center z-30">
                 <AlertTriangle className="w-8 h-8 text-rose-500 mb-2" />
                 <p className="text-xs text-rose-200 max-w-sm mb-3 font-mono">{cameraError}</p>
                 <button
+                  type="button"
                   onClick={startCamera}
-                  className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold"
+                  className="px-3.5 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-500"
                 >
                   Retry Camera
                 </button>
@@ -507,12 +497,12 @@ export default function QRGuardianPage({ prefilledData }) {
             )}
           </div>
 
-          {/* Action button: Start Live Camera Scan matching Screenshot 2 */}
+          {/* Button: Start Live Camera Scan */}
           {!isScanning ? (
             <button
               type="button"
               onClick={startCamera}
-              className="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition-all shadow-sm flex items-center justify-center space-x-2"
+              className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition-all shadow-sm flex items-center justify-center space-x-2"
             >
               <Camera className="w-4 h-4" />
               <span>Start Live Camera Scan</span>
@@ -521,26 +511,26 @@ export default function QRGuardianPage({ prefilledData }) {
             <button
               type="button"
               onClick={stopCamera}
-              className="w-full py-2.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-semibold transition-all shadow-sm flex items-center justify-center space-x-2"
+              className="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-semibold transition-all shadow-sm flex items-center justify-center space-x-2"
             >
               <CameraOff className="w-4 h-4" />
               <span>Stop Camera Scan</span>
             </button>
           )}
 
-          {/* Divider: OR matching Screenshot 2 */}
-          <div className="relative my-3">
+          {/* Divider: OR */}
+          <div className="relative py-1">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-200" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-400 font-medium tracking-wider">
+              <span className="bg-white px-2.5 text-slate-400 font-semibold tracking-wider">
                 OR
               </span>
             </div>
           </div>
 
-          {/* Hidden File Input for Upload Tab */}
+          {/* Hidden File Input */}
           <input
             type="file"
             ref={fileInputRef}
@@ -549,57 +539,101 @@ export default function QRGuardianPage({ prefilledData }) {
             className="hidden"
           />
 
-          {/* Decoded QR Content & Verification Form matching Screenshot 2 */}
+          {/* Form Section */}
           <form onSubmit={handleManualSubmit} className="space-y-4">
             {/* Decoded UPI QR Content (Intent URI) */}
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1.5">
+              <label className="text-xs font-medium text-slate-700 block mb-1.5">
                 Decoded UPI QR Content / Intent URI
               </label>
-              <div className="relative">
+              <div className="relative flex items-center">
                 <input
                   type="text"
                   required
                   value={qrText}
                   onChange={(e) => setQrText(e.target.value)}
                   placeholder="upi://pay?pa=...&pn=...&mc=..."
-                  className="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                  className="w-full pl-3.5 pr-20 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
                 />
-                <button
-                  type="button"
-                  onClick={copyToClipboard}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1 rounded"
-                  title="Copy Decoded URI"
-                >
-                  {copied ? (
-                    <Check className="w-4 h-4 text-emerald-600" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                </button>
+                <div className="absolute right-2 flex items-center space-x-0.5">
+                  {/* Preset selector dropdown */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowPresetDropdown(!showPresetDropdown)}
+                      className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors"
+                      title="Select Preset Scenario"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                    {showPresetDropdown && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-30"
+                          onClick={() => setShowPresetDropdown(false)}
+                        />
+                        <div className="absolute right-0 bottom-full mb-1 w-72 bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 z-40 animate-in fade-in zoom-in-95">
+                          <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase">
+                            Select Test Scenario
+                          </div>
+                          {PRESET_QR_SCENARIOS.map((preset, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                loadPreset(preset);
+                                setShowPresetDropdown(false);
+                              }}
+                              className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-slate-50 text-xs text-slate-800 font-medium transition-colors flex items-center justify-between"
+                            >
+                              <span className="truncate pr-2">{preset.title}</span>
+                              <span className="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-mono shrink-0">
+                                {preset.tag}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Copy Button */}
+                  <button
+                    type="button"
+                    onClick={copyToClipboard}
+                    className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors"
+                    title="Copy Intent URI"
+                  >
+                    {copied ? (
+                      <Check className="w-4 h-4 text-emerald-600" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Two Side-by-Side Input Fields */}
+            {/* Visual Store Branding & Mock POS Signature in 2 Columns */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1.5">
+                <label className="text-xs font-medium text-slate-700 block mb-1.5">
                   Visual Store Branding (Detected)
                 </label>
                 <div className="relative">
-                  <Store className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Store className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={claimedBrand}
                     onChange={(e) => setClaimedBrand(e.target.value)}
                     placeholder="e.g. Tata Starbucks Pvt Ltd"
-                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 flex items-center space-x-1 mb-1.5">
+                <label className="text-xs font-medium text-slate-700 flex items-center space-x-1 mb-1.5">
                   <Key className="w-3.5 h-3.5 text-slate-400" />
                   <span>Mock POS Terminal Signature</span>
                 </label>
@@ -609,20 +643,23 @@ export default function QRGuardianPage({ prefilledData }) {
                     value={posSignature}
                     onChange={(e) => setPosSignature(e.target.value)}
                     placeholder="e.g. SIG_POS_AUTH_TATA_SBUX_..."
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                    className="w-full pl-3.5 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Dark Action Button matching Screenshot 2 */}
+            {/* Dark Action Button matching Screenshot 1 */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-lg bg-[#0f172a] hover:bg-slate-800 text-white font-bold text-xs sm:text-sm shadow-sm transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
+              className="w-full py-3.5 rounded-xl bg-[#0f172a] hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm shadow-sm transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
             >
               {loading ? (
-                <span>Running Gemini AI & Merchant Registry Verification...</span>
+                <span className="flex items-center gap-2">
+                  <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                  <span>Running Verification & Counter Match...</span>
+                </span>
               ) : (
                 <>
                   <ShieldCheck className="w-4 h-4 text-white" />
@@ -632,13 +669,13 @@ export default function QRGuardianPage({ prefilledData }) {
             </button>
           </form>
 
-          {/* Gemini Multimodal Standee Inspector Toggle Drawer */}
+          {/* Gemini Vision Standee Inspector Options Drawer */}
           <div className="pt-2 border-t border-slate-100">
             <div className="flex items-center justify-between text-xs">
               <button
                 type="button"
                 onClick={() => setShowSettingsDrawer(!showSettingsDrawer)}
-                className="flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 font-medium"
+                className="flex items-center space-x-1.5 text-slate-500 hover:text-slate-800 font-medium"
               >
                 <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                 <span>Gemini Vision Standee Inspector Options</span>
@@ -694,20 +731,20 @@ export default function QRGuardianPage({ prefilledData }) {
           </div>
         </div>
 
-        {/* Right-Hand Contextual Panel (4-5 cols) matching Screenshot 2 */}
+        {/* Right Column (5 Cols) */}
         <div className="lg:col-span-5 space-y-5">
-          {/* Card 1: How to use QR Guardian matching Screenshot 2 */}
-          <div className="bg-[#f0f7ff] border border-blue-100 rounded-xl p-5 space-y-3">
-            <div className="flex items-center space-x-2 text-slate-900 font-semibold text-sm">
+          {/* Card 1: How to use QR Guardian matching Screenshot 1 */}
+          <div className="bg-[#f0f7ff] border border-blue-100 rounded-2xl p-5 shadow-sm space-y-3.5">
+            <div className="flex items-center space-x-2 text-slate-900 font-bold text-sm">
               <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
                 <Info className="w-3.5 h-3.5 text-white" />
               </div>
               <span>How to use QR Guardian</span>
             </div>
 
-            <div className="space-y-2.5 text-xs text-slate-600">
-              <div className="flex items-start space-x-2.5">
-                <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+            <div className="space-y-3 text-xs text-slate-600">
+              <div className="flex items-start space-x-3">
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
                   1
                 </span>
                 <p className="leading-relaxed">
@@ -715,8 +752,8 @@ export default function QRGuardianPage({ prefilledData }) {
                 </p>
               </div>
 
-              <div className="flex items-start space-x-2.5">
-                <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+              <div className="flex items-start space-x-3">
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
                   2
                 </span>
                 <p className="leading-relaxed">
@@ -724,8 +761,8 @@ export default function QRGuardianPage({ prefilledData }) {
                 </p>
               </div>
 
-              <div className="flex items-start space-x-2.5">
-                <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+              <div className="flex items-start space-x-3">
+                <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
                   3
                 </span>
                 <p className="leading-relaxed">
@@ -735,11 +772,11 @@ export default function QRGuardianPage({ prefilledData }) {
             </div>
           </div>
 
-          {/* Card 2: Live Scan Results matching Screenshot 2 */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+          {/* Card 2: Live Scan Results matching Screenshot 1 */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
             {/* Header with Live Status */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h2 className="text-sm font-semibold text-slate-900">
+              <h2 className="text-sm font-bold text-slate-900">
                 Live Scan Results
               </h2>
 
@@ -775,16 +812,16 @@ export default function QRGuardianPage({ prefilledData }) {
               </div>
             </div>
 
-            {/* Empty State before Scan matching Screenshot 2 */}
+            {/* Empty State before Scan matching Screenshot 1 */}
             {!result ? (
               <div className="py-6 flex flex-col items-center justify-center text-center space-y-2">
-                <div className="w-12 h-12 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-400 mb-1">
-                  <QrCode className="w-6 h-6" />
+                <div className="w-14 h-14 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-400 mb-1 shadow-sm">
+                  <QrCode className="w-7 h-7" />
                 </div>
                 <h3 className="font-semibold text-slate-800 text-sm">
                   No QR code scanned yet
                 </h3>
-                <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
+                <p className="text-xs text-slate-500 max-w-[260px] leading-relaxed">
                   Scan a UPI QR code using your camera or upload an image to see instant analysis results.
                 </p>
               </div>
@@ -827,10 +864,10 @@ export default function QRGuardianPage({ prefilledData }) {
                 {/* Risk Gauge */}
                 <RiskGauge score={result.risk_score} subtitle={result.risk_tier} />
 
-                {/* 4-Tier Data Origin Breakdown as required in Section 4 */}
-                <div className="space-y-3 pt-2 border-t border-slate-100">
-                  {/* 1. Extracted directly from QR payload */}
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
+                {/* 4-Tier Data Breakdown */}
+                <div className="space-y-2.5 pt-2 border-t border-slate-100">
+                  {/* 1. QR Payload */}
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
                     <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 pb-1 border-b border-slate-200 font-sans">
                       <span>1. Extracted from QR Payload</span>
                       <span className="text-[10px] text-blue-600 font-mono">Decoded</span>
@@ -869,8 +906,8 @@ export default function QRGuardianPage({ prefilledData }) {
                     )}
                   </div>
 
-                  {/* 2. Returned by trusted external / backend source */}
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
+                  {/* 2. Trusted Registry Lookup */}
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
                     <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 pb-1 border-b border-slate-200 font-sans">
                       <span>2. Trusted Registry Lookup</span>
                       <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
@@ -915,10 +952,10 @@ export default function QRGuardianPage({ prefilledData }) {
                     )}
                   </div>
 
-                  {/* 3. User-Entered Merchant Info & 4. Verification Comparison */}
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
+                  {/* 3. Counter Branding & POS Signature */}
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
                     <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 pb-1 border-b border-slate-200 font-sans">
-                      <span>3. Counter Branding & Cryptographic Signature</span>
+                      <span>3. Counter Branding & POS Signature</span>
                       <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
                         result.is_swapped
                           ? "bg-rose-100 text-rose-800"
@@ -1008,12 +1045,60 @@ export default function QRGuardianPage({ prefilledData }) {
                     </div>
                   ))}
                 </div>
+
+                {/* Action Buttons: 1930 Cybercrime Draft & Reset */}
+                <div className="pt-2 flex flex-col gap-2">
+                  {onOpenComplaintModal && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenComplaintModal(result.police_draft || `INCIDENT REPORT FOR CYBER CRIME CELL (PORTAL 1930 / CYBERCRIME.GOV.IN)\n=========================================================================\nIncident Type: Swapped QR Sticker Scam / Physical Counter Tampering\nSuspect UPI ID (VPA): ${result.parsed_payload?.vpa || "Unknown"}\nClaimed Brand: ${claimedBrand}\nTampering Flag: Counter mismatch detected`)}
+                      className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition-colors flex items-center justify-center space-x-1.5 shadow-sm"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>Generate 1930 Cybercrime Incident Report Draft</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      try {
+                        localStorage.setItem(
+                          "paysentrix_last_qr_context",
+                          JSON.stringify({
+                            qr_text: qrText,
+                            merchant_name: result?.parsed_payload?.merchant_name || claimedBrand,
+                            vpa: result?.parsed_payload?.vpa,
+                            amount: result?.parsed_payload?.amount
+                          })
+                        );
+                      } catch {}
+                      setActivePage?.("ghostpay-detector");
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs transition-colors border border-indigo-200 flex items-center justify-center space-x-1.5"
+                  >
+                    <Receipt className="w-3.5 h-3.5" />
+                    <span>Cross-Examine Customer Payment in GhostPay Detector</span>
+                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResult(null);
+                      setImagePreview(null);
+                    }}
+                    className="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors"
+                  >
+                    Scan Another QR Code
+                  </button>
+                </div>
               </div>
             )}
 
-            {/* Checklist: What we analyze matching Screenshot 2 */}
+            {/* Checklist: What we analyze matching Screenshot 1 */}
             <div className="pt-3 border-t border-slate-100 space-y-2.5">
-              <div className="flex items-center space-x-1.5 text-xs font-semibold text-slate-700">
+              <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800">
                 <BarChart2 className="w-3.5 h-3.5 text-blue-600" />
                 <span>What we analyze</span>
               </div>
