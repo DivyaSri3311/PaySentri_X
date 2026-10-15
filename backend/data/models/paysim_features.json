@@ -1,0 +1,19 @@
+[
+  "amount",
+  "oldbalanceOrg",
+  "newbalanceOrig",
+  "oldbalanceDest",
+  "newbalanceDest",
+  "errorBalanceOrig",
+  "errorBalanceDest",
+  "orig_depleted",
+  "dest_unexpected_inflow",
+  "amount_to_oldbalance_ratio",
+  "hour_of_day",
+  "is_merchant_dest",
+  "type_TRANSFER",
+  "type_CASH_OUT",
+  "type_PAYMENT",
+  "type_DEBIT",
+  "type_CASH_IN"
+]

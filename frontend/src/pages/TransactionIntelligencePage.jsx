@@ -106,31 +106,60 @@ export default function TransactionIntelligencePage({ prefilledData }) {
                 is_collect_request: 0,
                 device_is_new: 0,
                 device_rooted: 0,
-                payment_context: "Chai and bun maska"
+                payment_context: "Chai and bun maska",
+                transaction_type: "PAYMENT"
               })}
               className="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-semibold"
             >
-              Chai Payment (₹140)
+              Chai (₹140)
             </button>
             <button
               onClick={() => loadPreset({
-                amount: 24999,
-                sender_id: "user9821@oksbi",
-                recipient_id: "crypto.swap99@axis",
-                hour_of_day: 2,
-                sender_prev_tx_count: 4,
-                sender_avg_amount: 600,
+                amount: 180000,
+                sender_id: "C1231006815",
+                recipient_id: "C553264065",
+                hour_of_day: 3,
+                sender_prev_tx_count: 2,
+                sender_avg_amount: 1200,
                 recipient_is_new: 1,
                 recipient_risk_flag: 1,
                 direction: "DEBIT",
                 is_collect_request: 0,
                 device_is_new: 1,
                 device_rooted: 1,
-                payment_context: "Midnight Crypto Token Egress"
+                oldbalanceOrg: 180000,
+                newbalanceOrig: 0,
+                oldbalanceDest: 0,
+                newbalanceDest: 180000,
+                transaction_type: "TRANSFER",
+                payment_context: "PaySim Total Account Drain Attack"
               })}
               className="px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-semibold"
             >
-              Midnight Mule (₹24,999)
+              PaySim Drain ($180k)
+            </button>
+            <button
+              onClick={() => loadPreset({
+                amount: 45000,
+                sender_id: "C840083671",
+                recipient_id: "C38997010",
+                hour_of_day: 23,
+                sender_prev_tx_count: 1,
+                sender_avg_amount: 500,
+                recipient_is_new: 1,
+                recipient_risk_flag: 1,
+                direction: "DEBIT",
+                is_collect_request: 0,
+                device_is_new: 1,
+                device_rooted: 0,
+                oldbalanceOrg: 45000,
+                newbalanceOrig: 0,
+                transaction_type: "CASH_OUT",
+                payment_context: "PaySim Rapid Mule Cash-Out"
+              })}
+              className="px-2.5 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-semibold"
+            >
+              PaySim Cash-Out ($45k)
             </button>
           </div>
         </div>
@@ -393,6 +422,41 @@ export default function TransactionIntelligencePage({ prefilledData }) {
                   })}
                 </div>
               </div>
+
+              {/* PaySim Forensic Ledger Diagnostics */}
+              {result.paysim_benchmark && (
+                <div className="p-3.5 bg-gradient-to-r from-[#0b1329] to-[#080e22] rounded-xl border border-cyan-500/30 space-y-2">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-white/[0.06]">
+                    <span className="text-[10px] font-mono font-bold text-cyan-300 uppercase flex items-center space-x-1">
+                      <Cpu className="w-3 h-3 text-cyan-400" />
+                      <span>PaySim ML Benchmark Telemetry</span>
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                      {result.paysim_benchmark.model_accuracy} Accuracy
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                    <div className="p-2 rounded bg-black/40 border border-white/[0.05]">
+                      <span className="text-slate-400 text-[10px] block">Channel</span>
+                      <span className="text-white font-bold">{result.paysim_benchmark.transaction_type}</span>
+                    </div>
+                    <div className="p-2 rounded bg-black/40 border border-white/[0.05]">
+                      <span className="text-slate-400 text-[10px] block">Account Depleted</span>
+                      <span className={result.paysim_benchmark.origin_depleted ? "text-rose-400 font-bold" : "text-emerald-400 font-bold"}>
+                        {result.paysim_benchmark.origin_depleted ? "YES (WIPED TO ZERO)" : "NO (PRESERVED)"}
+                      </span>
+                    </div>
+                    <div className="p-2 rounded bg-black/40 border border-white/[0.05]">
+                      <span className="text-slate-400 text-[10px] block">Origin Error Term</span>
+                      <span className="text-slate-200 font-bold">Δ {result.paysim_benchmark.error_balance_orig}</span>
+                    </div>
+                    <div className="p-2 rounded bg-black/40 border border-white/[0.05]">
+                      <span className="text-slate-400 text-[10px] block">Trained Cohort</span>
+                      <span className="text-cyan-300 font-bold">6.36M PaySim</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Summary */}
               <div className="p-3 bg-white/[0.03] rounded-lg border border-white/[0.05] text-[11px] text-slate-300 font-mono">

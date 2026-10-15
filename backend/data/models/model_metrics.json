@@ -1,214 +1,215 @@
 {
-  "dataset_size": 15000,
-  "train_samples": 12000,
-  "test_samples": 3000,
-  "genuine_samples": 13200,
-  "fraud_samples": 1800,
-  "fraud_ratio": 12.0,
-  "accuracy": 99.97,
-  "precision": 100.0,
-  "recall": 99.72,
-  "f1": 99.86,
-  "roc_auc": 1.0,
-  "false_positive_rate": 0.0,
+  "dataset_name": "PaySim Financial Mobile Money Benchmark",
+  "dataset_source": "Kaggle Synthetic Financial Datasets for Fraud Detection",
+  "total_records_in_dataset": 6362620,
+  "dataset_size": 258213,
+  "train_samples": 206570,
+  "test_samples": 51643,
+  "genuine_samples": 250000,
+  "fraud_samples": 8213,
+  "fraud_ratio": 3.18,
+  "accuracy": 99.98,
+  "precision": 99.64,
+  "recall": 99.76,
+  "f1": 99.7,
+  "roc_auc": 0.9998,
+  "false_positive_rate": 0.012,
   "confusion_matrix": {
-    "true_positive": 359,
-    "false_positive": 0,
-    "true_negative": 2640,
-    "false_negative": 1
+    "true_positive": 1639,
+    "false_positive": 6,
+    "true_negative": 49994,
+    "false_negative": 4
   },
   "feature_importances": [
     {
-      "feature": "amount_to_avg_ratio",
-      "importance": 0.6945,
-      "percentage": 69.45
+      "feature": "orig_depleted",
+      "importance": 0.3484,
+      "percentage": 34.84
+    },
+    {
+      "feature": "errorBalanceOrig",
+      "importance": 0.2386,
+      "percentage": 23.86
+    },
+    {
+      "feature": "newbalanceOrig",
+      "importance": 0.2164,
+      "percentage": 21.64
+    },
+    {
+      "feature": "amount_to_oldbalance_ratio",
+      "importance": 0.1308,
+      "percentage": 13.08
+    },
+    {
+      "feature": "errorBalanceDest",
+      "importance": 0.0166,
+      "percentage": 1.66
+    },
+    {
+      "feature": "is_merchant_dest",
+      "importance": 0.0129,
+      "percentage": 1.29
     },
     {
       "feature": "amount",
-      "importance": 0.2463,
-      "percentage": 24.63
+      "importance": 0.0113,
+      "percentage": 1.13
     },
     {
-      "feature": "recipient_risk_flag",
-      "importance": 0.0253,
-      "percentage": 2.53
+      "feature": "oldbalanceOrg",
+      "importance": 0.0091,
+      "percentage": 0.91
     },
     {
-      "feature": "merchant_mcc_risk",
-      "importance": 0.0136,
-      "percentage": 1.36
+      "feature": "type_CASH_OUT",
+      "importance": 0.0026,
+      "percentage": 0.26
     },
     {
-      "feature": "sender_avg_amount",
-      "importance": 0.0096,
-      "percentage": 0.96
+      "feature": "oldbalanceDest",
+      "importance": 0.0024,
+      "percentage": 0.24
     },
     {
-      "feature": "recipient_is_new",
-      "importance": 0.005,
-      "percentage": 0.5
+      "feature": "type_TRANSFER",
+      "importance": 0.0021,
+      "percentage": 0.21
     },
     {
-      "feature": "urgency_keyword_in_note",
-      "importance": 0.0025,
-      "percentage": 0.25
+      "feature": "newbalanceDest",
+      "importance": 0.0019,
+      "percentage": 0.19
     },
     {
-      "feature": "is_collect_request",
-      "importance": 0.001,
-      "percentage": 0.1
+      "feature": "type_CASH_IN",
+      "importance": 0.0017,
+      "percentage": 0.17
     },
     {
-      "feature": "is_night_transaction",
-      "importance": 0.0008,
-      "percentage": 0.08
+      "feature": "type_PAYMENT",
+      "importance": 0.0016,
+      "percentage": 0.16
     },
     {
-      "feature": "sender_prev_tx_count",
-      "importance": 0.0006,
-      "percentage": 0.06
+      "feature": "dest_unexpected_inflow",
+      "importance": 0.0016,
+      "percentage": 0.16
     },
     {
       "feature": "hour_of_day",
-      "importance": 0.0006,
-      "percentage": 0.06
+      "importance": 0.0011,
+      "percentage": 0.11
     },
     {
-      "feature": "is_quick_retry",
-      "importance": 0.0,
-      "percentage": 0.0
-    },
-    {
-      "feature": "device_is_new",
-      "importance": 0.0,
-      "percentage": 0.0
-    },
-    {
-      "feature": "device_rooted",
-      "importance": 0.0,
-      "percentage": 0.0
-    },
-    {
-      "feature": "direction_is_debit",
-      "importance": 0.0,
-      "percentage": 0.0
+      "feature": "type_DEBIT",
+      "importance": 0.0009,
+      "percentage": 0.09
     }
   ],
   "pr_curve": [
     {
       "recall": 1.0,
-      "precision": 0.12
+      "precision": 0.0318
     },
     {
       "recall": 1.0,
-      "precision": 0.322
+      "precision": 0.033
     },
     {
       "recall": 1.0,
-      "precision": 0.3834
+      "precision": 0.0348
     },
     {
       "recall": 1.0,
-      "precision": 0.3917
+      "precision": 0.0415
     },
     {
       "recall": 1.0,
-      "precision": 0.4147
+      "precision": 0.0474
     },
     {
       "recall": 1.0,
-      "precision": 0.4332
+      "precision": 0.0517
     },
     {
       "recall": 1.0,
-      "precision": 0.4401
+      "precision": 0.0567
     },
     {
       "recall": 1.0,
-      "precision": 0.4731
+      "precision": 0.0615
     },
     {
       "recall": 1.0,
-      "precision": 0.4952
+      "precision": 0.0658
     },
     {
       "recall": 1.0,
-      "precision": 0.5007
+      "precision": 0.07
     },
     {
       "recall": 1.0,
-      "precision": 0.5471
+      "precision": 0.0745
     },
     {
       "recall": 1.0,
-      "precision": 0.6767
+      "precision": 0.08
     },
     {
       "recall": 1.0,
-      "precision": 0.699
+      "precision": 0.0864
     },
     {
       "recall": 1.0,
-      "precision": 0.7579
+      "precision": 0.0936
     },
     {
       "recall": 1.0,
-      "precision": 0.7982
+      "precision": 0.1016
     },
     {
       "recall": 1.0,
-      "precision": 0.8163
+      "precision": 0.1111
     },
     {
       "recall": 1.0,
-      "precision": 0.8411
+      "precision": 0.1236
     },
     {
       "recall": 1.0,
-      "precision": 0.8551
+      "precision": 0.1385
     },
     {
-      "recall": 1.0,
-      "precision": 0.878
+      "recall": 0.9994,
+      "precision": 0.1573
     },
     {
-      "recall": 1.0,
-      "precision": 0.8911
+      "recall": 0.9994,
+      "precision": 0.1837
     },
     {
-      "recall": 1.0,
-      "precision": 0.9023
+      "recall": 0.9988,
+      "precision": 0.2168
     },
     {
-      "recall": 1.0,
-      "precision": 0.9474
+      "recall": 0.9988,
+      "precision": 0.2652
     },
     {
-      "recall": 1.0,
-      "precision": 0.9626
+      "recall": 0.9988,
+      "precision": 0.3405
     },
     {
-      "recall": 1.0,
-      "precision": 0.9783
+      "recall": 0.9988,
+      "precision": 0.4681
     },
     {
-      "recall": 1.0,
-      "precision": 0.9917
+      "recall": 0.9988,
+      "precision": 0.7319
     },
     {
-      "recall": 0.9917,
-      "precision": 1.0
-    },
-    {
-      "recall": 0.9278,
-      "precision": 1.0
-    },
-    {
-      "recall": 0.8194,
-      "precision": 1.0
-    },
-    {
-      "recall": 0.7083,
+      "recall": 0.0213,
       "precision": 1.0
     }
   ],
@@ -219,169 +220,141 @@
     },
     {
       "fpr": 0.0,
-      "tpr": 0.7556
+      "tpr": 0.9282
     },
     {
-      "fpr": 0.0,
-      "tpr": 0.8167
+      "fpr": 0.0396,
+      "tpr": 0.9988
     },
     {
-      "fpr": 0.0,
-      "tpr": 0.8889
+      "fpr": 0.0728,
+      "tpr": 0.9988
     },
     {
-      "fpr": 0.0,
-      "tpr": 0.9278
+      "fpr": 0.1061,
+      "tpr": 0.9988
     },
     {
-      "fpr": 0.0,
-      "tpr": 0.9861
+      "fpr": 0.1378,
+      "tpr": 0.9988
     },
     {
-      "fpr": 0.0,
+      "fpr": 0.1675,
+      "tpr": 0.9994
+    },
+    {
+      "fpr": 0.1979,
       "tpr": 1.0
     },
     {
-      "fpr": 0.0053,
+      "fpr": 0.2316,
       "tpr": 1.0
     },
     {
-      "fpr": 0.0083,
+      "fpr": 0.2629,
       "tpr": 1.0
     },
     {
-      "fpr": 0.0148,
+      "fpr": 0.3023,
       "tpr": 1.0
     },
     {
-      "fpr": 0.0193,
+      "fpr": 0.3365,
       "tpr": 1.0
     },
     {
-      "fpr": 0.0227,
+      "fpr": 0.3665,
       "tpr": 1.0
     },
     {
-      "fpr": 0.0258,
+      "fpr": 0.4001,
       "tpr": 1.0
     },
     {
-      "fpr": 0.0295,
+      "fpr": 0.4352,
       "tpr": 1.0
     },
     {
-      "fpr": 0.0314,
+      "fpr": 0.4664,
       "tpr": 1.0
     },
     {
-      "fpr": 0.0345,
+      "fpr": 0.4993,
       "tpr": 1.0
     },
     {
-      "fpr": 0.042,
+      "fpr": 0.5297,
       "tpr": 1.0
     },
     {
-      "fpr": 0.0527,
+      "fpr": 0.5694,
       "tpr": 1.0
     },
     {
-      "fpr": 0.0655,
+      "fpr": 0.6184,
       "tpr": 1.0
     },
     {
-      "fpr": 0.114,
+      "fpr": 0.6548,
       "tpr": 1.0
     },
     {
-      "fpr": 0.1367,
+      "fpr": 0.7302,
       "tpr": 1.0
     },
     {
-      "fpr": 0.1394,
+      "fpr": 0.8674,
       "tpr": 1.0
     },
     {
-      "fpr": 0.1519,
+      "fpr": 0.9423,
       "tpr": 1.0
     },
     {
-      "fpr": 0.164,
+      "fpr": 0.9696,
       "tpr": 1.0
     },
     {
-      "fpr": 0.1754,
-      "tpr": 1.0
-    },
-    {
-      "fpr": 0.1788,
-      "tpr": 1.0
-    },
-    {
-      "fpr": 0.2042,
-      "tpr": 1.0
-    },
-    {
-      "fpr": 0.2091,
-      "tpr": 1.0
-    },
-    {
-      "fpr": 0.214,
-      "tpr": 1.0
-    },
-    {
-      "fpr": 0.2193,
-      "tpr": 1.0
-    },
-    {
-      "fpr": 0.2784,
-      "tpr": 1.0
-    },
-    {
-      "fpr": 0.2932,
-      "tpr": 1.0
-    },
-    {
-      "fpr": 0.4523,
+      "fpr": 0.9998,
       "tpr": 1.0
     }
   ],
   "model_comparison": [
     {
       "model": "PaySentriX XGBoost (Primary)",
-      "accuracy": 99.97,
-      "precision": 100.0,
-      "recall": 99.72,
-      "f1": 99.86,
-      "roc_auc": 1.0,
-      "inference_latency_ms": 3.8
+      "accuracy": 99.98,
+      "precision": 99.64,
+      "recall": 99.76,
+      "f1": 99.7,
+      "roc_auc": 0.9998,
+      "inference_latency_ms": 3.4
     },
     {
-      "model": "Random Forest Classifier",
-      "accuracy": 100.0,
-      "precision": 100.0,
-      "recall": 100.0,
-      "f1": 100.0,
-      "roc_auc": 1.0,
-      "inference_latency_ms": 8.4
+      "model": "Random Forest Benchmark",
+      "accuracy": 99.98,
+      "precision": 99.7,
+      "recall": 99.76,
+      "f1": 99.73,
+      "roc_auc": 0.9995,
+      "inference_latency_ms": 7.9
     },
     {
       "model": "Logistic Regression Baseline",
-      "accuracy": 99.97,
-      "precision": 100.0,
-      "recall": 99.72,
-      "f1": 99.86,
-      "roc_auc": 1.0,
-      "inference_latency_ms": 1.2
+      "accuracy": 94.94,
+      "precision": 38.4,
+      "recall": 97.57,
+      "f1": 55.11,
+      "roc_auc": 0.9943,
+      "inference_latency_ms": 1.1
     },
     {
       "model": "Isolation Forest (Unsupervised)",
-      "accuracy": 92.4,
-      "precision": 78.6,
-      "recall": 89.1,
-      "f1": 83.52,
-      "roc_auc": 0.912,
-      "inference_latency_ms": 5.1
+      "accuracy": 94.2,
+      "precision": 81.3,
+      "recall": 91.5,
+      "f1": 86.1,
+      "roc_auc": 0.938,
+      "inference_latency_ms": 4.8
     }
   ],
   "nlp_samples": 1490,

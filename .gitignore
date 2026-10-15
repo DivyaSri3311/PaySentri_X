@@ -36,3 +36,7 @@ Thumbs.db
 *.log
 .env
 .env.local
+
+# Large Datasets
+PS_*.csv
+*.csv.zip
