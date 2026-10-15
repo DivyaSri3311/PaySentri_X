@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Menu,
   Bell,
@@ -24,6 +24,33 @@ export default function TopNav({
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    try {
+      return localStorage.getItem("paysentrix_scam_checker_theme") || "light";
+    } catch {
+      return "light";
+    }
+  });
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      try {
+        const stored = localStorage.getItem("paysentrix_scam_checker_theme");
+        if (stored) setCurrentTheme(stored);
+      } catch {}
+    };
+    window.addEventListener("paysentrix_scam_checker_theme_changed", handleThemeChange);
+    return () => window.removeEventListener("paysentrix_scam_checker_theme_changed", handleThemeChange);
+  }, []);
+
+  const toggleAppTheme = () => {
+    const nextTheme = currentTheme === "light" ? "dark" : "light";
+    setCurrentTheme(nextTheme);
+    try {
+      localStorage.setItem("paysentrix_scam_checker_theme", nextTheme);
+      window.dispatchEvent(new Event("paysentrix_scam_checker_theme_changed"));
+    } catch {}
+  };
 
   const recentNotifications = [
     { id: 1, title: "Physical QR Swapped Sticker Flagged", time: "2m ago", level: "CRITICAL" },
@@ -186,13 +213,19 @@ export default function TopNav({
           )}
         </div>
 
-        {/* Theme Toggle Button (Sun icon in Screenshot 2) */}
+        {/* Theme Toggle Button */}
         <button
           type="button"
-          aria-label="Theme Mode"
+          aria-label={`Switch to ${currentTheme === "light" ? "Dark" : "Light"} Mode`}
+          onClick={toggleAppTheme}
+          title={`Switch to ${currentTheme === "light" ? "Dark" : "Light"} Mode`}
           className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
         >
-          <Sun className="w-4 h-4" />
+          {currentTheme === "dark" ? (
+            <Moon className="w-4 h-4 text-cyan-500" />
+          ) : (
+            <Sun className="w-4 h-4 text-amber-500" />
+          )}
         </button>
 
         {/* Notification Bell with red badge */}

@@ -1,6 +1,12 @@
 import React from "react";
 
-export default function RiskGauge({ score = 0, size = 180, showTier = true, subtitle = "Composite Risk Score" }) {
+export default function RiskGauge({
+  score = 0,
+  size = 180,
+  showTier = true,
+  subtitle = "Composite Risk Score",
+  isDark = false
+}) {
   const normalizedScore = Math.min(100, Math.max(0, score));
   const radius = 68;
   const circumference = 2 * Math.PI * radius;
@@ -10,20 +16,28 @@ export default function RiskGauge({ score = 0, size = 180, showTier = true, subt
   // Determine color and tier
   let color = "#10b981"; // Safe
   let tier = "SAFE";
-  let tierClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
+  let tierClass = isDark
+    ? "bg-emerald-950/60 text-emerald-300 border-emerald-500/40"
+    : "bg-emerald-50 text-emerald-700 border-emerald-200";
 
   if (normalizedScore >= 80) {
     color = "#ef4444"; // Critical
     tier = "CRITICAL THREAT";
-    tierClass = "bg-rose-50 text-rose-700 border-rose-200 font-bold";
+    tierClass = isDark
+      ? "bg-rose-950/60 text-rose-300 border-rose-500/40 font-bold"
+      : "bg-rose-50 text-rose-700 border-rose-200 font-bold";
   } else if (normalizedScore >= 50) {
     color = "#f97316"; // High
     tier = "HIGH RISK";
-    tierClass = "bg-orange-50 text-orange-700 border-orange-200 font-semibold";
+    tierClass = isDark
+      ? "bg-orange-950/60 text-orange-300 border-orange-500/40 font-semibold"
+      : "bg-orange-50 text-orange-700 border-orange-200 font-semibold";
   } else if (normalizedScore >= 25) {
     color = "#f59e0b"; // Medium
     tier = "SUSPICIOUS";
-    tierClass = "bg-amber-50 text-amber-700 border-amber-200 font-medium";
+    tierClass = isDark
+      ? "bg-amber-950/60 text-amber-300 border-amber-500/40 font-medium"
+      : "bg-amber-50 text-amber-700 border-amber-200 font-medium";
   }
 
   return (
@@ -41,7 +55,7 @@ export default function RiskGauge({ score = 0, size = 180, showTier = true, subt
             cy="80"
             r={radius}
             fill="none"
-            stroke="#e2e8f0"
+            stroke={isDark ? "#334155" : "#e2e8f0"}
             strokeWidth="12"
             strokeDasharray={`${arcLength} ${circumference}`}
             strokeLinecap="round"
@@ -72,7 +86,9 @@ export default function RiskGauge({ score = 0, size = 180, showTier = true, subt
           >
             {normalizedScore.toFixed(0)}
           </span>
-          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mt-0.5">
+          <span className={`text-[10px] font-mono uppercase tracking-widest mt-0.5 ${
+            isDark ? "text-slate-500" : "text-slate-400"
+          }`}>
             / 100
           </span>
         </div>
@@ -84,7 +100,7 @@ export default function RiskGauge({ score = 0, size = 180, showTier = true, subt
             {tier}
           </span>
           {subtitle && (
-            <span className="text-[11px] text-slate-500 mt-1 font-medium">
+            <span className={`text-[11px] mt-1 font-medium ${isDark ? "text-slate-400" : "text-slate-500"}`}>
               {subtitle}
             </span>
           )}

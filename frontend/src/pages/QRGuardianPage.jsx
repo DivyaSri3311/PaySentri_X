@@ -25,7 +25,9 @@ import {
   Zap,
   FileText,
   Receipt,
-  ArrowRight
+  ArrowRight,
+  Sun,
+  Moon
 } from "lucide-react";
 import jsQR from "jsqr";
 import RiskGauge from "../components/RiskGauge";
@@ -105,6 +107,30 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("paysentrix_scam_checker_theme") || "light";
+  });
+  const isDark = theme === "dark";
+
+  const toggleTheme = (newMode) => {
+    const target = newMode || (theme === "light" ? "dark" : "light");
+    setTheme(target);
+    try {
+      localStorage.setItem("paysentrix_scam_checker_theme", target);
+      window.dispatchEvent(new Event("paysentrix_scam_checker_theme_changed"));
+    } catch {}
+  };
+
+  useEffect(() => {
+    const onThemeChange = () => {
+      const stored = localStorage.getItem("paysentrix_scam_checker_theme");
+      if (stored && stored !== theme) {
+        setTheme(stored);
+      }
+    };
+    window.addEventListener("paysentrix_scam_checker_theme_changed", onThemeChange);
+    return () => window.removeEventListener("paysentrix_scam_checker_theme_changed", onThemeChange);
+  }, [theme]);
 
   // Live Camera Scanner States
   const [isScanning, setIsScanning] = useState(false);
@@ -349,26 +375,76 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
   const gemini = result?.gemini_analysis;
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 transition-colors duration-200 ${isDark ? "text-slate-100" : "text-slate-800"}`}>
       {/* Top Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b transition-colors ${
+        isDark ? "border-slate-800" : "border-slate-200/80"
+      }`}>
         <div className="flex items-center space-x-3.5">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-sm shrink-0 border border-blue-500/20">
+          <div className={`w-11 h-11 rounded-xl flex items-center justify-center shadow-sm shrink-0 border transition-all ${
+            isDark
+              ? "bg-gradient-to-br from-cyan-600 to-blue-700 text-white border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.25)]"
+              : "bg-gradient-to-br from-blue-600 to-indigo-700 text-white border-blue-500/20"
+          }`}>
             <QrCode className="w-5 h-5 text-white" />
           </div>
           <div>
             <div className="flex items-center space-x-2.5">
-              <h1 className="text-xl sm:text-2xl font-bold font-heading text-slate-900 tracking-tight">
+              <h1 className={`text-xl sm:text-2xl font-bold font-heading tracking-tight transition-colors ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}>
                 Payment Scam Checker
               </h1>
-              <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-2xs">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shadow-2xs transition-colors ${
+                isDark
+                  ? "bg-emerald-950/60 text-emerald-300 border-emerald-500/30"
+                  : "bg-emerald-50 text-emerald-700 border-emerald-200/80"
+              }`}>
+                <ShieldCheck className={`w-3.5 h-3.5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                 <span>NPCI Compliant</span>
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
-              Scan or upload any payment QR code to verify <strong className="font-semibold text-slate-700">merchant</strong> identity, detect tampering, and prevent scam transfers.
+            <p className={`text-xs sm:text-sm mt-1 leading-relaxed transition-colors ${
+              isDark ? "text-slate-400" : "text-slate-500"
+            }`}>
+              Scan or upload any payment QR code to verify <strong className={`font-semibold ${isDark ? "text-slate-200" : "text-slate-700"}`}>merchant</strong> identity, detect tampering, and prevent scam transfers.
             </p>
+          </div>
+        </div>
+
+        {/* Light & Dark Mode Toggle Switch */}
+        <div className="flex items-center space-x-2 self-start sm:self-center shrink-0">
+          <div className={`flex items-center p-1 rounded-xl border transition-all ${
+            isDark
+              ? "bg-slate-900/90 border-slate-700/80 shadow-inner"
+              : "bg-slate-100/90 border-slate-200/80 shadow-2xs"
+          }`}>
+            <button
+              type="button"
+              onClick={() => toggleTheme("light")}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                !isDark
+                  ? "bg-white text-amber-600 shadow-xs border border-slate-200/80 font-bold"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
+              }`}
+              title="Switch to Light Mode"
+            >
+              <Sun className={`w-3.5 h-3.5 ${!isDark ? "text-amber-500" : "text-slate-400"}`} />
+              <span>Light</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleTheme("dark")}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                isDark
+                  ? "bg-slate-950 text-cyan-400 shadow-sm border border-cyan-500/40 font-bold"
+                  : "text-slate-500 hover:text-slate-800 hover:bg-white/60"
+              }`}
+              title="Switch to Dark Mode"
+            >
+              <Moon className={`w-3.5 h-3.5 ${isDark ? "text-cyan-400" : "text-slate-500"}`} />
+              <span>Dark</span>
+            </button>
           </div>
         </div>
       </div>
@@ -376,9 +452,17 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
       {/* Main 2-Column Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column (7 Cols) */}
-        <div className="lg:col-span-7 bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+        <div className={`lg:col-span-7 border rounded-2xl p-5 sm:p-6 space-y-4 transition-colors ${
+          isDark
+            ? "bg-slate-900/90 border-slate-800 shadow-xl shadow-black/20"
+            : "bg-white border-slate-200/80 shadow-sm"
+        }`}>
           {/* Top Tabs */}
-          <div className="grid grid-cols-2 gap-3 p-1 bg-slate-100/80 rounded-xl border border-slate-200/60">
+          <div className={`grid grid-cols-2 gap-3 p-1 rounded-xl border transition-colors ${
+            isDark
+              ? "bg-slate-950/80 border-slate-800"
+              : "bg-slate-100/80 border-slate-200/60"
+          }`}>
             <button
               type="button"
               onClick={() => {
@@ -387,8 +471,12 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
               }}
               className={`flex items-center justify-center space-x-2 py-2 px-4 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
                 activeInputMode === "camera"
-                  ? "bg-white text-blue-700 shadow-sm border border-slate-200/60"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                  ? isDark
+                    ? "bg-slate-800 text-cyan-400 shadow-sm border border-slate-700"
+                    : "bg-white text-blue-700 shadow-sm border border-slate-200/60"
+                  : isDark
+                    ? "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
               }`}
             >
               <Camera className="w-4 h-4" />
@@ -404,8 +492,12 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
               }}
               className={`flex items-center justify-center space-x-2 py-2 px-4 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
                 activeInputMode === "upload"
-                  ? "bg-white text-blue-700 shadow-sm border border-slate-200/60"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                  ? isDark
+                    ? "bg-slate-800 text-cyan-400 shadow-sm border border-slate-700"
+                    : "bg-white text-blue-700 shadow-sm border border-slate-200/60"
+                  : isDark
+                    ? "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
               }`}
             >
               <Upload className="w-4 h-4" />
@@ -414,7 +506,9 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
           </div>
 
           {/* Camera Viewfinder Card */}
-          <div className="relative w-full h-[280px] sm:h-[330px] bg-slate-950 rounded-2xl overflow-hidden border border-slate-200 flex items-center justify-center shadow-inner group">
+          <div className={`relative w-full h-[280px] sm:h-[330px] bg-slate-950 rounded-2xl overflow-hidden border flex items-center justify-center shadow-inner group transition-colors ${
+            isDark ? "border-slate-800" : "border-slate-200"
+          }`}>
             {/* Live Video Stream */}
             <video
               ref={videoRef}
@@ -433,17 +527,21 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
               />
             )}
 
-            {/* 4 White Corner Brackets Framing Target */}
+            {/* 4 Corner Brackets Framing Target */}
             <div className="absolute inset-0 pointer-events-none p-8 sm:p-12 flex items-center justify-center">
               <div className="relative w-48 h-48 sm:w-56 sm:h-56">
-                {/* Top-Left Bracket */}
-                <span className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-white rounded-tl shadow" />
-                {/* Top-Right Bracket */}
-                <span className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-white rounded-tr shadow" />
-                {/* Bottom-Left Bracket */}
-                <span className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-white rounded-bl shadow" />
-                {/* Bottom-Right Bracket */}
-                <span className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-white rounded-br shadow" />
+                <span className={`absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 rounded-tl shadow ${
+                  isDark ? "border-cyan-400" : "border-white"
+                }`} />
+                <span className={`absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 rounded-tr shadow ${
+                  isDark ? "border-cyan-400" : "border-white"
+                }`} />
+                <span className={`absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 rounded-bl shadow ${
+                  isDark ? "border-cyan-400" : "border-white"
+                }`} />
+                <span className={`absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 rounded-br shadow ${
+                  isDark ? "border-cyan-400" : "border-white"
+                }`} />
               </div>
             </div>
 
@@ -462,10 +560,12 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
               <button
                 type="button"
                 onClick={captureFrameNow}
-                className="w-11 h-11 rounded-full border-2 border-white flex items-center justify-center bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all shadow-md"
+                className={`w-11 h-11 rounded-full border-2 border-white flex items-center justify-center active:scale-95 transition-all shadow-md ${
+                  isDark ? "bg-cyan-500 hover:bg-cyan-400" : "bg-blue-600 hover:bg-blue-500"
+                }`}
                 title="Capture Scan"
               >
-                <span className="w-4 h-4 rounded-full bg-white" />
+                <span className={`w-4 h-4 rounded-full ${isDark ? "bg-slate-950" : "bg-white"}`} />
               </button>
 
               <button
@@ -502,7 +602,11 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
             <button
               type="button"
               onClick={startCamera}
-              className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition-all shadow-sm flex items-center justify-center space-x-2"
+              className={`w-full py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm flex items-center justify-center space-x-2 ${
+                isDark
+                  ? "bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
+              }`}
             >
               <Camera className="w-4 h-4" />
               <span>Start Live Camera Scan</span>
@@ -521,10 +625,12 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
           {/* Divider: OR */}
           <div className="relative py-1">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200" />
+              <div className={`w-full border-t transition-colors ${isDark ? "border-slate-800" : "border-slate-200"}`} />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2.5 text-slate-400 font-semibold tracking-wider">
+              <span className={`px-2.5 font-semibold tracking-wider transition-colors ${
+                isDark ? "bg-slate-900 text-slate-500" : "bg-white text-slate-400"
+              }`}>
                 OR
               </span>
             </div>
@@ -543,7 +649,9 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
           <form onSubmit={handleManualSubmit} className="space-y-4">
             {/* Decoded UPI QR Content (Intent URI) */}
             <div>
-              <label className="text-xs font-medium text-slate-700 block mb-1.5">
+              <label className={`text-xs font-medium block mb-1.5 transition-colors ${
+                isDark ? "text-slate-300" : "text-slate-700"
+              }`}>
                 Decoded UPI QR Content / Intent URI
               </label>
               <div className="relative flex items-center">
@@ -553,7 +661,11 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                   value={qrText}
                   onChange={(e) => setQrText(e.target.value)}
                   placeholder="upi://pay?pa=...&pn=...&mc=..."
-                  className="w-full pl-3.5 pr-20 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                  className={`w-full pl-3.5 pr-20 py-2.5 rounded-xl text-xs font-mono transition-all focus:outline-none ${
+                    isDark
+                      ? "bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 focus:border-cyan-500 focus:bg-black"
+                      : "bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
+                  }`}
                 />
                 <div className="absolute right-2 flex items-center space-x-0.5">
                   {/* Preset selector dropdown */}
@@ -561,7 +673,11 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                     <button
                       type="button"
                       onClick={() => setShowPresetDropdown(!showPresetDropdown)}
-                      className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors"
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        isDark
+                          ? "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                          : "text-slate-400 hover:text-slate-700 hover:bg-slate-200/60"
+                      }`}
                       title="Select Preset Scenario"
                     >
                       <ChevronDown className="w-4 h-4" />
@@ -572,8 +688,14 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                           className="fixed inset-0 z-30"
                           onClick={() => setShowPresetDropdown(false)}
                         />
-                        <div className="absolute right-0 bottom-full mb-1 w-72 bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 z-40 animate-in fade-in zoom-in-95">
-                          <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase">
+                        <div className={`absolute right-0 bottom-full mb-1 w-72 rounded-xl border p-1.5 z-40 animate-in fade-in zoom-in-95 transition-colors ${
+                          isDark
+                            ? "bg-slate-900 border-slate-800 shadow-2xl text-slate-100"
+                            : "bg-white border-slate-200 shadow-xl text-slate-800"
+                        }`}>
+                          <div className={`px-2.5 py-1 text-[10px] font-bold uppercase ${
+                            isDark ? "text-slate-500" : "text-slate-400"
+                          }`}>
                             Select Test Scenario
                           </div>
                           {PRESET_QR_SCENARIOS.map((preset, idx) => (
@@ -584,10 +706,18 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                                 loadPreset(preset);
                                 setShowPresetDropdown(false);
                               }}
-                              className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-slate-50 text-xs text-slate-800 font-medium transition-colors flex items-center justify-between"
+                              className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between ${
+                                isDark
+                                  ? "hover:bg-slate-800 text-slate-200"
+                                  : "hover:bg-slate-50 text-slate-800"
+                              }`}
                             >
                               <span className="truncate pr-2">{preset.title}</span>
-                              <span className="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-mono shrink-0">
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono shrink-0 ${
+                                isDark
+                                  ? "text-cyan-400 bg-cyan-950/70"
+                                  : "text-blue-600 bg-blue-50"
+                              }`}>
                                 {preset.tag}
                               </span>
                             </button>
@@ -601,11 +731,15 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                   <button
                     type="button"
                     onClick={copyToClipboard}
-                    className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors"
+                    className={`p-1.5 rounded-lg transition-colors ${
+                      isDark
+                        ? "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                        : "text-slate-400 hover:text-slate-700 hover:bg-slate-200/60"
+                    }`}
                     title="Copy Intent URI"
                   >
                     {copied ? (
-                      <Check className="w-4 h-4 text-emerald-600" />
+                      <Check className="w-4 h-4 text-emerald-400" />
                     ) : (
                       <Copy className="w-4 h-4" />
                     )}
@@ -617,7 +751,9 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
             {/* Visual Store Branding & Mock POS Signature in 2 Columns */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="text-xs font-medium text-slate-700 block mb-1.5">
+                <label className={`text-xs font-medium block mb-1.5 transition-colors ${
+                  isDark ? "text-slate-300" : "text-slate-700"
+                }`}>
                   Visual Store Branding (Detected)
                 </label>
                 <div className="relative">
@@ -627,13 +763,19 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                     value={claimedBrand}
                     onChange={(e) => setClaimedBrand(e.target.value)}
                     placeholder="e.g. Tata Starbucks Pvt Ltd"
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                    className={`w-full pl-9 pr-3.5 py-2.5 rounded-xl text-xs transition-all focus:outline-none ${
+                      isDark
+                        ? "bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 focus:border-cyan-500 focus:bg-black"
+                        : "bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
+                    }`}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-medium text-slate-700 flex items-center space-x-1 mb-1.5">
+                <label className={`text-xs font-medium flex items-center space-x-1 mb-1.5 transition-colors ${
+                  isDark ? "text-slate-300" : "text-slate-700"
+                }`}>
                   <Key className="w-3.5 h-3.5 text-slate-400" />
                   <span>Mock POS Terminal Signature</span>
                 </label>
@@ -643,7 +785,11 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                     value={posSignature}
                     onChange={(e) => setPosSignature(e.target.value)}
                     placeholder="e.g. SIG_POS_AUTH_TATA_SBUX_..."
-                    className="w-full pl-3.5 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+                    className={`w-full pl-3.5 pr-3.5 py-2.5 rounded-xl text-xs font-mono transition-all focus:outline-none ${
+                      isDark
+                        ? "bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 focus:border-cyan-500 focus:bg-black"
+                        : "bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:bg-white"
+                    }`}
                   />
                 </div>
               </div>
@@ -653,16 +799,20 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm shadow-sm transition-all active:scale-[0.99] flex items-center justify-center space-x-2 disabled:opacity-50"
+              className={`w-full py-3.5 rounded-xl font-semibold text-xs sm:text-sm transition-all active:scale-[0.99] flex items-center justify-center space-x-2 disabled:opacity-50 ${
+                isDark
+                  ? "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold shadow-cyan-500/20 shadow-md"
+                  : "bg-slate-900 hover:bg-slate-800 text-white shadow-sm"
+              }`}
             >
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                  <RefreshCw className="w-4 h-4 animate-spin text-inherit" />
                   <span>Running Verification & Counter Match...</span>
                 </span>
               ) : (
                 <>
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <ShieldCheck className={`w-4 h-4 ${isDark ? "text-slate-950" : "text-emerald-400"}`} />
                   <span>Verify QR Authenticity & Counter Match</span>
                 </>
               )}
@@ -670,21 +820,27 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
           </form>
 
           {/* Gemini Vision Standee Inspector Options Drawer */}
-          <div className="pt-2 border-t border-slate-100">
+          <div className={`pt-2 border-t transition-colors ${isDark ? "border-slate-800" : "border-slate-100"}`}>
             <div className="flex items-center justify-between text-xs">
               <button
                 type="button"
                 onClick={() => setShowSettingsDrawer(!showSettingsDrawer)}
-                className="flex items-center space-x-1.5 text-slate-500 hover:text-slate-800 font-medium"
+                className={`flex items-center space-x-1.5 font-medium transition-colors ${
+                  isDark ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-800"
+                }`}
               >
-                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                <Sparkles className={`w-3.5 h-3.5 ${isDark ? "text-cyan-400" : "text-blue-600"}`} />
                 <span>Gemini Vision Standee Inspector Options</span>
               </button>
               <span
                 className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
                   geminiApiKey
-                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold"
-                    : "bg-slate-100 text-slate-500"
+                    ? isDark
+                      ? "bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 font-semibold"
+                      : "bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold"
+                    : isDark
+                      ? "bg-slate-800 text-slate-400"
+                      : "bg-slate-100 text-slate-500"
                 }`}
               >
                 {geminiApiKey ? "API KEY CONFIGURED" : "OPTIONAL AI KEY"}
@@ -692,16 +848,20 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
             </div>
 
             {showSettingsDrawer && (
-              <div className="mt-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5 animate-in fade-in duration-200">
+              <div className={`mt-3 p-3.5 rounded-xl space-y-2.5 animate-in fade-in duration-200 border transition-colors ${
+                isDark ? "bg-slate-950/80 border-slate-800" : "bg-slate-50 border-slate-200"
+              }`}>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-800">
+                  <span className={`text-xs font-semibold ${isDark ? "text-slate-200" : "text-slate-800"}`}>
                     Gemini Multimodal AI Vision Key
                   </span>
                   <a
                     href="https://aistudio.google.com/app/apikey"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[11px] text-blue-600 hover:underline flex items-center space-x-1"
+                    className={`text-[11px] hover:underline flex items-center space-x-1 ${
+                      isDark ? "text-cyan-400" : "text-blue-600"
+                    }`}
                   >
                     <span>Get Key</span>
                     <ExternalLink className="w-3 h-3" />
@@ -713,7 +873,11 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                     value={geminiApiKey}
                     onChange={(e) => handleSaveApiKey(e.target.value)}
                     placeholder="Enter Gemini API key (optional for simulated vision)"
-                    className="w-full pl-3 pr-8 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-800 focus:outline-none focus:border-blue-500"
+                    className={`w-full pl-3 pr-8 py-1.5 rounded-lg text-xs font-mono focus:outline-none transition-colors ${
+                      isDark
+                        ? "bg-slate-900 border border-slate-800 text-slate-100 placeholder-slate-500 focus:border-cyan-500"
+                        : "bg-white border border-slate-200 text-slate-800 focus:border-blue-500"
+                    }`}
                   />
                   <button
                     type="button"
@@ -723,7 +887,7 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                     {showApiKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
                 </div>
-                <p className="text-[11px] text-slate-500">
+                <p className={`text-[11px] ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                   When active, Gemini analyzes standee images to cross-reference counter logos with digital VPAs.
                 </p>
               </div>
@@ -734,17 +898,25 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
         {/* Right Column (5 Cols) */}
         <div className="lg:col-span-5 space-y-5">
           {/* Card 1: How to use Payment Scam Checker */}
-          <div className="bg-gradient-to-br from-blue-50/90 to-indigo-50/40 border border-blue-200/70 rounded-2xl p-5 shadow-xs space-y-3.5">
-            <div className="flex items-center space-x-2 text-slate-900 font-bold text-sm">
-              <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
-                <Info className="w-3.5 h-3.5 text-white" />
+          <div className={`rounded-2xl p-5 shadow-xs space-y-3.5 border transition-all ${
+            isDark
+              ? "bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border-slate-800 text-slate-200 shadow-md"
+              : "bg-gradient-to-br from-blue-50/90 to-indigo-50/40 border-blue-200/70 text-slate-900"
+          }`}>
+            <div className={`flex items-center space-x-2 font-bold text-sm ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 shadow-2xs ${
+                isDark ? "bg-cyan-500 text-slate-950 font-bold" : "bg-blue-600 text-white"
+              }`}>
+                <Info className="w-3.5 h-3.5" />
               </div>
               <span>How to use Payment Scam Checker</span>
             </div>
 
-            <div className="space-y-3 text-xs text-slate-600">
+            <div className={`space-y-3 text-xs ${isDark ? "text-slate-400" : "text-slate-600"}`}>
               <div className="flex items-start space-x-3">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                <span className={`w-5 h-5 rounded-full font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5 ${
+                  isDark ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" : "bg-blue-600 text-white"
+                }`}>
                   1
                 </span>
                 <p className="leading-relaxed">
@@ -753,7 +925,9 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
               </div>
 
               <div className="flex items-start space-x-3">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                <span className={`w-5 h-5 rounded-full font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5 ${
+                  isDark ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" : "bg-blue-600 text-white"
+                }`}>
                   2
                 </span>
                 <p className="leading-relaxed">
@@ -762,7 +936,9 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
               </div>
 
               <div className="flex items-start space-x-3">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                <span className={`w-5 h-5 rounded-full font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5 ${
+                  isDark ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" : "bg-blue-600 text-white"
+                }`}>
                   3
                 </span>
                 <p className="leading-relaxed">
@@ -772,39 +948,45 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
             </div>
           </div>
 
-          {/* Card 2: Live Scan Results matching Screenshot 1 */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+          {/* Card 2: Live Scan Results */}
+          <div className={`border rounded-2xl p-5 shadow-sm space-y-4 transition-colors ${
+            isDark
+              ? "bg-slate-900/90 border-slate-800 text-slate-100 shadow-xl shadow-black/20"
+              : "bg-white border-slate-200 text-slate-900"
+          }`}>
             {/* Header with Live Status */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h2 className="text-sm font-bold text-slate-900">
+            <div className={`flex items-center justify-between pb-3 border-b transition-colors ${
+              isDark ? "border-slate-800" : "border-slate-100"
+            }`}>
+              <h2 className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
                 Live Scan Results
               </h2>
 
               <div className="flex items-center space-x-1.5 text-xs font-medium">
                 {loading ? (
-                  <span className="text-blue-600 flex items-center space-x-1">
-                    <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
+                  <span className={`${isDark ? "text-cyan-400" : "text-blue-600"} flex items-center space-x-1`}>
+                    <span className={`w-2 h-2 rounded-full ${isDark ? "bg-cyan-400" : "bg-blue-600"} animate-ping`} />
                     <span>Analyzing...</span>
                   </span>
                 ) : isScanning ? (
-                  <span className="text-amber-600 flex items-center space-x-1">
+                  <span className="text-amber-500 flex items-center space-x-1">
                     <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                     <span>Scanning</span>
                   </span>
                 ) : result ? (
                   result.is_swapped ? (
-                    <span className="text-rose-600 flex items-center space-x-1 font-bold">
+                    <span className="text-rose-500 flex items-center space-x-1 font-bold">
                       <span className="w-2 h-2 rounded-full bg-rose-500" />
                       <span>Tampering Flagged</span>
                     </span>
                   ) : (
-                    <span className="text-emerald-600 flex items-center space-x-1 font-bold">
+                    <span className="text-emerald-500 flex items-center space-x-1 font-bold">
                       <span className="w-2 h-2 rounded-full bg-emerald-500" />
                       <span>Verified</span>
                     </span>
                   )
                 ) : (
-                  <span className="text-emerald-600 flex items-center space-x-1.5 font-medium">
+                  <span className="text-emerald-500 flex items-center space-x-1.5 font-medium">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     <span>Ready</span>
                   </span>
@@ -812,16 +994,18 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
               </div>
             </div>
 
-            {/* Empty State before Scan matching Screenshot 1 */}
+            {/* Empty State before Scan */}
             {!result ? (
               <div className="py-6 flex flex-col items-center justify-center text-center space-y-2">
-                <div className="w-14 h-14 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-400 mb-1 shadow-sm">
+                <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center mb-1 shadow-sm transition-colors ${
+                  isDark ? "border-slate-800 bg-slate-950 text-slate-500" : "border-slate-200 bg-slate-50 text-slate-400"
+                }`}>
                   <QrCode className="w-7 h-7" />
                 </div>
-                <h3 className="font-semibold text-slate-800 text-sm">
+                <h3 className={`font-semibold text-sm ${isDark ? "text-slate-200" : "text-slate-800"}`}>
                   No QR code scanned yet
                 </h3>
-                <p className="text-xs text-slate-500 max-w-[260px] leading-relaxed">
+                <p className={`text-xs max-w-[260px] leading-relaxed ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                   Scan a UPI QR code using your camera or upload an image to see instant analysis results.
                 </p>
               </div>
@@ -830,79 +1014,97 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
               <div className="space-y-4 animate-in fade-in duration-300">
                 {/* Prominent Verdict Banner */}
                 {result.is_swapped ? (
-                  <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 space-y-1">
-                    <div className="flex items-center space-x-2 font-bold text-xs sm:text-sm text-rose-900">
-                      <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
+                  <div className={`p-3.5 rounded-xl border space-y-1 ${
+                    isDark ? "bg-rose-950/40 border-rose-500/40 text-rose-300" : "bg-rose-50 border-rose-200 text-rose-800"
+                  }`}>
+                    <div className={`flex items-center space-x-2 font-bold text-xs sm:text-sm ${
+                      isDark ? "text-rose-200" : "text-rose-900"
+                    }`}>
+                      <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0" />
                       <span>PHYSICAL QR STICKER TAMPERING DETECTED</span>
                     </div>
-                    <p className="text-xs text-rose-700 leading-relaxed">
+                    <p className={`text-xs leading-relaxed ${isDark ? "text-rose-300" : "text-rose-700"}`}>
                       {result.guidance || "DO NOT PAY! The physical QR code at this counter has been replaced or tampered with."}
                     </p>
                   </div>
                 ) : result.is_verified ? (
-                  <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 space-y-1">
-                    <div className="flex items-center space-x-2 font-bold text-xs sm:text-sm text-emerald-900">
-                      <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div className={`p-3.5 rounded-xl border space-y-1 ${
+                    isDark ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300" : "bg-emerald-50 border-emerald-200 text-emerald-800"
+                  }`}>
+                    <div className={`flex items-center space-x-2 font-bold text-xs sm:text-sm ${
+                      isDark ? "text-emerald-200" : "text-emerald-900"
+                    }`}>
+                      <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                       <span>VERIFIED OFFICIAL MERCHANT</span>
                     </div>
-                    <p className="text-xs text-emerald-700 leading-relaxed">
+                    <p className={`text-xs leading-relaxed ${isDark ? "text-emerald-300" : "text-emerald-700"}`}>
                       {result.guidance || "Verified official merchant. Safe to proceed with payment."}
                     </p>
                   </div>
                 ) : (
-                  <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 space-y-1">
-                    <div className="flex items-center space-x-2 font-bold text-xs text-amber-900">
-                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <div className={`p-3.5 rounded-xl border space-y-1 ${
+                    isDark ? "bg-amber-950/40 border-amber-500/40 text-amber-300" : "bg-amber-50 border-amber-200 text-amber-800"
+                  }`}>
+                    <div className={`flex items-center space-x-2 font-bold text-xs ${
+                      isDark ? "text-amber-200" : "text-amber-900"
+                    }`}>
+                      <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
                       <span>UNREGISTERED COMMERCIAL ENTITY</span>
                     </div>
-                    <p className="text-xs text-amber-700 leading-relaxed">
+                    <p className={`text-xs leading-relaxed ${isDark ? "text-amber-300" : "text-amber-700"}`}>
                       {result.guidance || "This VPA is not enrolled in the national enterprise registry. Proceed with caution."}
                     </p>
                   </div>
                 )}
 
                 {/* Risk Gauge */}
-                <RiskGauge score={result.risk_score} subtitle={result.risk_tier} />
+                <RiskGauge score={result.risk_score} subtitle={result.risk_tier} isDark={isDark} />
 
                 {/* 4-Tier Data Breakdown */}
-                <div className="space-y-2.5 pt-2 border-t border-slate-100">
+                <div className={`space-y-2.5 pt-2 border-t transition-colors ${isDark ? "border-slate-800" : "border-slate-100"}`}>
                   {/* 1. QR Payload */}
-                  <div className="p-3.5 rounded-xl bg-slate-50/90 border border-slate-200/80 text-xs space-y-2 font-mono shadow-2xs">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 pb-1.5 border-b border-slate-200/80 font-sans">
+                  <div className={`p-3.5 rounded-xl border text-xs space-y-2 font-mono shadow-2xs transition-colors ${
+                    isDark ? "bg-slate-950/80 border-slate-800 text-slate-200" : "bg-slate-50/90 border-slate-200/80"
+                  }`}>
+                    <div className={`flex items-center justify-between text-[11px] font-bold pb-1.5 border-b font-sans ${
+                      isDark ? "border-slate-800 text-slate-300" : "border-slate-200/80 text-slate-700"
+                    }`}>
                       <span className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isDark ? "bg-cyan-400" : "bg-blue-600"}`}></span>
                         <span>1. Extracted from QR Payload</span>
                       </span>
-                      <span className="text-[10px] text-blue-700 bg-blue-50 border border-blue-200/60 px-1.5 py-0.5 rounded font-mono font-semibold">Decoded</span>
+                      <span className={`text-[10px] border px-1.5 py-0.5 rounded font-mono font-semibold ${
+                        isDark ? "text-cyan-400 bg-cyan-950/50 border-cyan-500/30" : "text-blue-700 bg-blue-50 border-blue-200/60"
+                      }`}>Decoded</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-sans">Payee VPA:</span>
-                      <span className="text-slate-900 font-semibold truncate max-w-[210px]">
+                      <span className={`font-sans ${isDark ? "text-slate-400" : "text-slate-500"}`}>Payee VPA:</span>
+                      <span className={`font-semibold truncate max-w-[210px] ${isDark ? "text-slate-200" : "text-slate-900"}`}>
                         {result.parsed_payload?.vpa || "N/A"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-sans">Payee Name:</span>
-                      <span className="text-slate-800 font-sans font-medium truncate max-w-[210px]">
+                      <span className={`font-sans ${isDark ? "text-slate-400" : "text-slate-500"}`}>Payee Name:</span>
+                      <span className={`font-sans font-medium truncate max-w-[210px] ${isDark ? "text-slate-200" : "text-slate-800"}`}>
                         {result.parsed_payload?.merchant_name || "N/A"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-sans">MCC Code:</span>
-                      <span className="text-slate-700 font-semibold">
+                      <span className={`font-sans ${isDark ? "text-slate-400" : "text-slate-500"}`}>MCC Code:</span>
+                      <span className={`font-semibold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                         {result.parsed_payload?.mcc_code || "0000"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-sans">Mode:</span>
-                      <span className="text-slate-700 font-sans">
+                      <span className={`font-sans ${isDark ? "text-slate-400" : "text-slate-500"}`}>Mode:</span>
+                      <span className={`font-sans ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                         {result.parsed_payload?.qr_mode || "Static"}
                       </span>
                     </div>
                     {result.parsed_payload?.amount && (
-                      <div className="flex justify-between items-center pt-1 border-t border-slate-200/60">
-                        <span className="text-slate-500 font-sans">Amount:</span>
-                        <span className="text-emerald-700 font-bold font-mono text-xs">
+                      <div className={`flex justify-between items-center pt-1 border-t ${isDark ? "border-slate-800" : "border-slate-200/60"}`}>
+                        <span className={`font-sans ${isDark ? "text-slate-400" : "text-slate-500"}`}>Amount:</span>
+                        <span className={`font-bold font-mono text-xs ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>
                           ₹{result.parsed_payload.amount}
                         </span>
                       </div>
@@ -910,16 +1112,20 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                   </div>
 
                   {/* 2. Trusted Registry Lookup */}
-                  <div className="p-3.5 rounded-xl bg-slate-50/90 border border-slate-200/80 text-xs space-y-2 font-mono shadow-2xs">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 pb-1.5 border-b border-slate-200/80 font-sans">
+                  <div className={`p-3.5 rounded-xl border text-xs space-y-2 font-mono shadow-2xs transition-colors ${
+                    isDark ? "bg-slate-950/80 border-slate-800 text-slate-200" : "bg-slate-50/90 border-slate-200/80"
+                  }`}>
+                    <div className={`flex items-center justify-between text-[11px] font-bold pb-1.5 border-b font-sans ${
+                      isDark ? "border-slate-800 text-slate-300" : "border-slate-200/80 text-slate-700"
+                    }`}>
                       <span className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                         <span>2. Trusted Registry Lookup</span>
                       </span>
                       <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${
                         result.is_verified
-                          ? "bg-emerald-50 text-emerald-800 border-emerald-200/80"
-                          : "bg-slate-100 text-slate-600 border-slate-200/80"
+                          ? isDark ? "bg-emerald-950/50 text-emerald-300 border-emerald-500/30" : "bg-emerald-50 text-emerald-800 border-emerald-200/80"
+                          : isDark ? "bg-slate-900 text-slate-400 border-slate-800" : "bg-slate-100 text-slate-600 border-slate-200/80"
                       }`}>
                         {result.is_verified ? "ENROLLED" : "NOT ENROLLED"}
                       </span>
@@ -927,65 +1133,77 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                     {result.merchant_details ? (
                       <>
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-500 font-sans">Registered Entity:</span>
-                          <span className="text-emerald-700 font-bold font-sans">
+                          <span className={`font-sans ${isDark ? "text-slate-400" : "text-slate-500"}`}>Registered Entity:</span>
+                          <span className={`font-bold font-sans ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>
                             {result.merchant_details.brand_name}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-500 font-sans">Registered VPA:</span>
-                          <span className="text-slate-800">
+                          <span className={`font-sans ${isDark ? "text-slate-400" : "text-slate-500"}`}>Registered VPA:</span>
+                          <span className={isDark ? "text-slate-200" : "text-slate-800"}>
                             {result.merchant_details.registered_vpa}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-500 font-sans">Category:</span>
-                          <span className="text-slate-700 font-sans">
+                          <span className={`font-sans ${isDark ? "text-slate-400" : "text-slate-500"}`}>Category:</span>
+                          <span className={`font-sans ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                             {result.merchant_details.category}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-500 font-sans">Tier:</span>
-                          <span className="text-emerald-700 font-bold font-sans">
+                          <span className={`font-sans ${isDark ? "text-slate-400" : "text-slate-500"}`}>Tier:</span>
+                          <span className={`font-bold font-sans ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>
                             {result.merchant_details.tier}
                           </span>
                         </div>
                       </>
                     ) : (
-                      <p className="text-[11px] text-slate-500 font-sans italic py-0.5">
+                      <p className={`text-[11px] font-sans italic py-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                         No enterprise registration on file for VPA "{result.parsed_payload?.vpa}".
                       </p>
                     )}
                   </div>
 
                   {/* 3. Counter Branding & POS Signature */}
-                  <div className="p-3.5 rounded-xl bg-slate-50/90 border border-slate-200/80 text-xs space-y-2 font-mono shadow-2xs">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 pb-1.5 border-b border-slate-200/80 font-sans">
+                  <div className={`p-3.5 rounded-xl border text-xs space-y-2 font-mono shadow-2xs transition-colors ${
+                    isDark ? "bg-slate-950/80 border-slate-800 text-slate-200" : "bg-slate-50/90 border-slate-200/80"
+                  }`}>
+                    <div className={`flex items-center justify-between text-[11px] font-bold pb-1.5 border-b font-sans ${
+                      isDark ? "border-slate-800 text-slate-300" : "border-slate-200/80 text-slate-700"
+                    }`}>
                       <span className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isDark ? "bg-cyan-400" : "bg-indigo-600"}`}></span>
                         <span>3. Counter Branding & POS Signature</span>
                       </span>
                       <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${
                         result.is_swapped
-                          ? "bg-rose-50 text-rose-800 border-rose-200/80"
-                          : "bg-emerald-50 text-emerald-800 border-emerald-200/80"
+                          ? isDark ? "bg-rose-950/50 text-rose-300 border-rose-500/30" : "bg-rose-50 text-rose-800 border-rose-200/80"
+                          : isDark ? "bg-emerald-950/50 text-emerald-300 border-emerald-500/30" : "bg-emerald-50 text-emerald-800 border-emerald-200/80"
                       }`}>
                         {result.is_swapped ? "CONTRADICTION" : "CONSISTENT"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-sans">Visual Store:</span>
-                      <span className="text-slate-800 font-sans font-semibold">{claimedBrand || "None entered"}</span>
+                      <span className={`font-sans ${isDark ? "text-slate-400" : "text-slate-500"}`}>Visual Store:</span>
+                      <span className={`font-sans font-semibold ${isDark ? "text-slate-200" : "text-slate-800"}`}>{claimedBrand || "None entered"}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-sans">Counter Match:</span>
-                      <span className={`font-sans font-bold ${result.is_swapped ? "text-rose-600" : "text-emerald-700"}`}>
+                      <span className={`font-sans ${isDark ? "text-slate-400" : "text-slate-500"}`}>Counter Match:</span>
+                      <span className={`font-sans font-bold ${
+                        result.is_swapped
+                          ? "text-rose-500"
+                          : isDark ? "text-emerald-400" : "text-emerald-700"
+                      }`}>
                         {result.is_swapped ? "FAILED (Sticker Swap Detected)" : "PASSED"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-sans">POS Signature:</span>
-                      <span className={`font-sans font-medium ${result.pos_signature_valid ? "text-emerald-700 font-semibold" : "text-slate-600"}`}>
+                      <span className={`font-sans ${isDark ? "text-slate-400" : "text-slate-500"}`}>POS Signature:</span>
+                      <span className={`font-sans font-medium ${
+                        result.pos_signature_valid
+                          ? isDark ? "text-emerald-400 font-semibold" : "text-emerald-700 font-semibold"
+                          : isDark ? "text-slate-400" : "text-slate-600"
+                      }`}>
                         {result.pos_signature_valid ? "VALID (Ed25519 Hardware POS)" : "Not present / Unsigned"}
                       </span>
                     </div>
@@ -994,34 +1212,42 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
 
                 {/* Gemini Vision AI Standee Findings (if present) */}
                 {gemini && !gemini.error && (
-                  <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-200 space-y-2 text-xs">
+                  <div className={`p-3.5 rounded-xl border space-y-2 text-xs transition-colors ${
+                    isDark ? "bg-blue-950/30 border-blue-500/30 text-blue-200" : "bg-blue-50/70 border-blue-200 text-slate-800"
+                  }`}>
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900 flex items-center space-x-1">
-                        <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                      <span className={`font-bold flex items-center space-x-1 ${isDark ? "text-blue-300" : "text-slate-900"}`}>
+                        <Sparkles className={`w-3.5 h-3.5 ${isDark ? "text-cyan-400" : "text-blue-600"}`} />
                         <span>Gemini Vision AI Standee Findings</span>
                       </span>
                       <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
                         gemini.tampering_detected
-                          ? "bg-rose-100 text-rose-800"
-                          : "bg-emerald-100 text-emerald-800"
+                          ? isDark ? "bg-rose-950/60 text-rose-300 border border-rose-500/30" : "bg-rose-100 text-rose-800"
+                          : isDark ? "bg-emerald-950/60 text-emerald-300 border border-emerald-500/30" : "bg-emerald-100 text-emerald-800"
                       }`}>
                         {gemini.tampering_detected ? "TAMPERING OBSERVED" : "CLEARED"}
                       </span>
                     </div>
-                    <div className="space-y-1 font-mono text-[11px] text-slate-700">
+                    <div className={`space-y-1 font-mono text-[11px] ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                       <div className="flex justify-between">
-                        <span className="text-slate-500">Visual Brand Detected:</span>
-                        <span className="font-semibold text-slate-900">{gemini.visual_brand_detected}</span>
+                        <span className={isDark ? "text-slate-400" : "text-slate-500"}>Visual Brand Detected:</span>
+                        <span className={`font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}>{gemini.visual_brand_detected}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-500">Cross-Modal Invariance:</span>
-                        <span className={gemini.cross_modal_match ? "text-emerald-700 font-bold" : "text-rose-700 font-bold"}>
+                        <span className={isDark ? "text-slate-400" : "text-slate-500"}>Cross-Modal Invariance:</span>
+                        <span className={`font-bold ${
+                          gemini.cross_modal_match
+                            ? isDark ? "text-emerald-400" : "text-emerald-700"
+                            : isDark ? "text-rose-400" : "text-rose-700"
+                        }`}>
                           {gemini.cross_modal_match ? "Match" : "CONTRADICTION"}
                         </span>
                       </div>
                     </div>
                     {gemini.forensic_reasoning && (
-                      <p className="text-[11px] text-slate-600 italic pt-1 border-t border-blue-100 leading-relaxed font-sans">
+                      <p className={`text-[11px] italic pt-1 border-t leading-relaxed font-sans ${
+                        isDark ? "text-slate-400 border-blue-900/40" : "text-slate-600 border-blue-100"
+                      }`}>
                         "{gemini.forensic_reasoning}"
                       </p>
                     )}
@@ -1030,27 +1256,29 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
 
                 {/* Evidence Checklist */}
                 <div className="space-y-1.5 pt-2">
-                  <span className="text-xs font-semibold text-slate-800 block">
+                  <span className={`text-xs font-semibold block ${isDark ? "text-slate-200" : "text-slate-800"}`}>
                     Security Analysis Checklist
                   </span>
                   {(result.evidence || []).map((ev, idx) => (
                     <div
                       key={idx}
-                      className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-0.5"
+                      className={`p-2.5 rounded-lg border text-xs space-y-0.5 transition-colors ${
+                        isDark ? "bg-slate-950/80 border-slate-800" : "bg-slate-50 border-slate-200"
+                      }`}
                     >
                       <div className="flex justify-between font-mono">
-                        <span className="text-slate-800 font-semibold">{ev.type}</span>
+                        <span className={`font-semibold ${isDark ? "text-slate-200" : "text-slate-800"}`}>{ev.type}</span>
                         <span
                           className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
                             ev.status === "PASS"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-rose-100 text-rose-800"
+                              ? isDark ? "bg-emerald-950/60 text-emerald-300 border border-emerald-500/30" : "bg-emerald-100 text-emerald-800"
+                              : isDark ? "bg-rose-950/60 text-rose-300 border border-rose-500/30" : "bg-rose-100 text-rose-800"
                           }`}
                         >
                           {ev.status}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-600">{ev.detail}</p>
+                      <p className={`text-[11px] ${isDark ? "text-slate-400" : "text-slate-600"}`}>{ev.detail}</p>
                     </div>
                   ))}
                 </div>
@@ -1084,7 +1312,11 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                       } catch {}
                       setActivePage?.("ghostpay-detector");
                     }}
-                    className="w-full py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs transition-colors border border-indigo-200 flex items-center justify-center space-x-1.5"
+                    className={`w-full py-2.5 rounded-xl font-semibold text-xs transition-colors border flex items-center justify-center space-x-1.5 ${
+                      isDark
+                        ? "bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-300 border-indigo-500/30"
+                        : "bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200"
+                    }`}
                   >
                     <Receipt className="w-3.5 h-3.5" />
                     <span>Cross-Examine Customer Payment in GhostPay Detector</span>
@@ -1097,7 +1329,11 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
                       setResult(null);
                       setImagePreview(null);
                     }}
-                    className="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors"
+                    className={`w-full py-2 rounded-xl font-semibold text-xs transition-colors ${
+                      isDark
+                        ? "bg-slate-800 hover:bg-slate-700 text-slate-200"
+                        : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                    }`}
                   >
                     Scan Another QR Code
                   </button>
@@ -1105,36 +1341,40 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
               </div>
             )}
 
-            {/* Checklist: What we analyze matching Screenshot 1 */}
-            <div className="pt-3 border-t border-slate-100 space-y-2.5">
-              <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800">
-                <BarChart2 className="w-3.5 h-3.5 text-blue-600" />
+            {/* Checklist: What we analyze */}
+            <div className={`pt-3 border-t space-y-2.5 transition-colors ${
+              isDark ? "border-slate-800" : "border-slate-100"
+            }`}>
+              <div className={`flex items-center space-x-1.5 text-xs font-bold ${
+                isDark ? "text-slate-200" : "text-slate-800"
+              }`}>
+                <BarChart2 className={`w-3.5 h-3.5 ${isDark ? "text-cyan-400" : "text-blue-600"}`} />
                 <span>What we analyze</span>
               </div>
 
-              <div className="space-y-1.5 text-xs text-slate-600">
+              <div className={`space-y-1.5 text-xs ${isDark ? "text-slate-400" : "text-slate-600"}`}>
                 <div className="flex items-center space-x-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                   <span>UPI payload structure & parameters</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                   <span>Merchant name and VPA verification</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                   <span>QR tampering and malicious redirection</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                   <span>NPCI format compliance</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                   <span>Counterfeit sticker detection</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                   <span>Risk score and safety recommendations</span>
                 </div>
               </div>
