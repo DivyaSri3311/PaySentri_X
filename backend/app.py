@@ -95,6 +95,8 @@ class QRVerifyRequest(BaseModel):
     qr_text: str = Field(..., min_length=4)
     claimed_store_brand: Optional[str] = None
     pos_signature: Optional[str] = None
+    image_base64: Optional[str] = None
+    gemini_api_key: Optional[str] = None
 
 class EvolutionRequest(BaseModel):
     scenario_name: str
@@ -306,7 +308,9 @@ def verify_qr(req: QRVerifyRequest):
     res = qr_service.verify_merchant(
         scanned_qr_text=req.qr_text,
         claimed_store_brand=req.claimed_store_brand,
-        pos_signature=req.pos_signature
+        pos_signature=req.pos_signature,
+        image_base64=req.image_base64,
+        gemini_api_key=req.gemini_api_key
     )
     
     record_id = audit_service.record_analysis(

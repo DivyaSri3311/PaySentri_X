@@ -125,14 +125,16 @@ export const api = {
     });
   },
 
-  // QR: Verify
-  verifyQR: async (qrText, claimedBrand = null, posSignature = null) => {
+  // QR: Verify with Gemini Multimodal AI
+  verifyQR: async (qrText, claimedBrand = null, posSignature = null, imageBase64 = null, geminiApiKey = null) => {
     return await request("/api/qr/verify", {
       method: "POST",
       body: JSON.stringify({
         qr_text: qrText,
         claimed_store_brand: claimedBrand,
         pos_signature: posSignature,
+        image_base64: imageBase64,
+        gemini_api_key: geminiApiKey,
       }),
     });
   },
