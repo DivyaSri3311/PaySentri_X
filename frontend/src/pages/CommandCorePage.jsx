@@ -11,7 +11,9 @@ import {
   ExternalLink,
   ChevronRight,
   Sparkles,
-  Zap
+  Zap,
+  CheckCircle2,
+  BarChart3
 } from "lucide-react";
 import TransactionNetwork3D from "../components/TransactionNetwork3D";
 import { api } from "../utils/api";
@@ -47,26 +49,24 @@ export default function CommandCorePage({ setActivePage, onOpenAuditDetail, onSe
   return (
     <div className="space-y-6">
       {/* Hero Security Banner */}
-      <div className="glass-panel-elevated p-6 bg-gradient-to-r from-[#0c1329] via-[#09152b] to-[#0a1c2e] border-cyan-500/30 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-2 max-w-2xl">
             <div className="flex items-center space-x-2">
-              <span className="px-2.5 py-0.5 text-[11px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded-full flex items-center space-x-1.5 shadow-cyan-glow">
-                <Sparkles className="w-3 h-3 text-cyan-400" />
+              <span className="px-2.5 py-0.5 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 rounded-full flex items-center space-x-1.5">
+                <Sparkles className="w-3 h-3 text-blue-600" />
                 <span>CYBERCUP 6.0 THREAT SHIELD</span>
               </span>
-              <span className="text-xs text-slate-400 font-mono">
+              <span className="text-xs text-slate-500 font-mono">
                 Model Defense Active
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-white tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 tracking-tight leading-tight">
               AI-Powered UPI Fraud Prevention & Promise Verification
             </h1>
 
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <p className="text-sm text-slate-600 leading-relaxed">
               "The Payment Is Real. The Promise May Not Be." PaySentriX analyzes transaction promises against physical execution, detecting reverse-debit traps, swapped QR stickers, and impersonation before simulated fund clearance.
             </p>
           </div>
@@ -74,14 +74,14 @@ export default function CommandCorePage({ setActivePage, onOpenAuditDetail, onSe
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               onClick={() => setActivePage("ai-payment-contract")}
-              className="flex items-center space-x-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-black font-heading font-bold text-sm shadow-cyan-glow transition-all"
+              className="flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs sm:text-sm shadow-sm transition-all"
             >
-              <ShieldAlert className="w-4 h-4 text-black" />
+              <ShieldAlert className="w-4 h-4 text-white" />
               <span>Verify Payment Contract</span>
             </button>
             <button
               onClick={() => setActivePage("data-science-studio")}
-              className="flex items-center space-x-2 px-4 py-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-slate-200 border border-white/[0.12] text-sm font-semibold transition-all"
+              className="flex items-center space-x-2 px-4 py-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs sm:text-sm font-semibold transition-all shadow-sm"
             >
               <span>Holdout ML Studio</span>
             </button>
@@ -92,104 +92,106 @@ export default function CommandCorePage({ setActivePage, onOpenAuditDetail, onSe
       {/* Metric Cards Row */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
         {/* Metric 1 */}
-        <div className="glass-card p-4 rounded-xl">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-1">
             Total Analyzed
           </span>
-          <div className="text-xl sm:text-2xl font-heading font-extrabold text-white">
+          <div className="text-xl sm:text-2xl font-heading font-extrabold text-slate-900">
             {metrics.total_transactions_analyzed.toLocaleString()}
           </div>
-          <span className="text-[10px] font-mono text-cyan-400 mt-1 block">
+          <span className="text-[10px] font-mono text-blue-600 mt-1 block font-medium">
             Synthetic Corpus + Live
           </span>
         </div>
 
         {/* Metric 2 */}
-        <div className="glass-card p-4 rounded-xl">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-1">
             Suspicious Flagged
           </span>
-          <div className="text-xl sm:text-2xl font-heading font-extrabold text-amber-400">
+          <div className="text-xl sm:text-2xl font-heading font-extrabold text-amber-600">
             {metrics.suspicious_transactions.toLocaleString()}
           </div>
-          <span className="text-[10px] font-mono text-slate-400 mt-1 block">
+          <span className="text-[10px] font-mono text-slate-500 mt-1 block">
             ~12.0% Baseline
           </span>
         </div>
 
         {/* Metric 3 */}
-        <div className="glass-card p-4 rounded-xl">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-1">
             High Risk Alerts
           </span>
-          <div className="text-xl sm:text-2xl font-heading font-extrabold text-rose-400">
+          <div className="text-xl sm:text-2xl font-heading font-extrabold text-rose-600">
             {metrics.high_risk_alerts.toLocaleString()}
           </div>
-          <span className="text-[10px] font-mono text-rose-300 mt-1 block">
+          <span className="text-[10px] font-mono text-rose-600 mt-1 block font-semibold">
             Blocked Pre-PIN
           </span>
         </div>
 
         {/* Metric 4 */}
-        <div className="glass-card p-4 rounded-xl">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-1">
             Detection Recall
           </span>
-          <div className="text-xl sm:text-2xl font-heading font-extrabold text-emerald-400">
+          <div className="text-xl sm:text-2xl font-heading font-extrabold text-emerald-600">
             {metrics.fraud_detection_rate}%
           </div>
-          <span className="text-[10px] font-mono text-emerald-400 mt-1 block">
+          <span className="text-[10px] font-mono text-emerald-600 mt-1 block font-semibold">
             Holdout Test Data
           </span>
         </div>
 
         {/* Metric 5 */}
-        <div className="glass-card p-4 rounded-xl">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-1">
             Precision Rate
           </span>
-          <div className="text-xl sm:text-2xl font-heading font-extrabold text-cyan-300">
+          <div className="text-xl sm:text-2xl font-heading font-extrabold text-blue-600">
             {metrics.precision_rate}%
           </div>
-          <span className="text-[10px] font-mono text-slate-400 mt-1 block">
+          <span className="text-[10px] font-mono text-slate-500 mt-1 block">
             Zero False Positives
           </span>
         </div>
 
         {/* Metric 6 */}
-        <div className="glass-card p-4 rounded-xl">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-1">
             Inference Latency
           </span>
-          <div className="text-xl sm:text-2xl font-heading font-extrabold text-white">
-            {metrics.avg_latency_ms} <span className="text-xs text-slate-400">ms</span>
+          <div className="text-xl sm:text-2xl font-heading font-extrabold text-slate-900">
+            {metrics.avg_latency_ms} <span className="text-xs text-slate-500">ms</span>
           </div>
-          <span className="text-[10px] font-mono text-cyan-400 mt-1 block">
+          <span className="text-[10px] font-mono text-blue-600 mt-1 block font-medium">
             FastAPI + XGBoost
           </span>
         </div>
       </div>
 
       {/* 3D Interactive Transaction Network */}
-      <TransactionNetwork3D />
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+        <TransactionNetwork3D />
+      </div>
 
       {/* Lower Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left (2 Cols): Live Suspicious Activity Stream */}
-        <div className="lg:col-span-2 glass-panel p-5 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
-              <h2 className="text-sm font-heading font-bold text-white flex items-center space-x-2">
-                <Activity className="w-4 h-4 text-cyan-400" />
+              <h2 className="text-sm font-heading font-bold text-slate-900 flex items-center space-x-2">
+                <Activity className="w-4 h-4 text-blue-600" />
                 <span>Recent Suspicious Transactions & Forensic Traces</span>
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Latest simulated threat vectors intercepted by PaySentriX multi-tier defense.
               </p>
             </div>
             <button
               onClick={() => setActivePage("audit-history")}
-              className="text-xs font-mono text-cyan-400 hover:text-cyan-300 flex items-center space-x-1"
+              className="text-xs font-mono text-blue-600 hover:text-blue-700 font-semibold flex items-center space-x-1"
             >
               <span>View Audit Ledger</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -201,38 +203,38 @@ export default function CommandCorePage({ setActivePage, onOpenAuditDetail, onSe
               <div
                 key={item.id}
                 onClick={() => onOpenAuditDetail && onOpenAuditDetail(item)}
-                className="p-3 rounded-xl bg-black/40 hover:bg-white/[0.04] border border-white/[0.06] hover:border-cyan-500/30 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-2 group"
+                className="p-3 rounded-xl bg-slate-50 hover:bg-blue-50/50 border border-slate-200 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-2 group"
               >
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2">
                     <span
                       className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded ${
                         item.risk_tier === "CRITICAL"
-                          ? "bg-rose-500/20 text-rose-300 border border-rose-500/40"
+                          ? "bg-rose-50 text-rose-700 border border-rose-200"
                           : item.risk_tier === "HIGH"
-                          ? "bg-orange-500/20 text-orange-300 border border-orange-500/40"
-                          : "bg-emerald-500/20 text-emerald-300"
+                          ? "bg-orange-50 text-orange-700 border border-orange-200"
+                          : "bg-emerald-50 text-emerald-700 border border-emerald-200"
                       }`}
                     >
                       {item.risk_tier} ({item.risk_score})
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400">
+                    <span className="text-[10px] font-mono text-slate-500">
                       {item.analysis_type} • {item.id}
                     </span>
                   </div>
-                  <h4 className="text-xs font-semibold text-slate-200 group-hover:text-cyan-300 transition-colors">
+                  <h4 className="text-xs font-semibold text-slate-800 group-hover:text-blue-600 transition-colors">
                     {item.input_summary}
                   </h4>
-                  <p className="text-[11px] text-slate-400 line-clamp-1">
+                  <p className="text-[11px] text-slate-500 line-clamp-1">
                     {item.explanation}
                   </p>
                 </div>
 
                 <div className="flex items-center space-x-2 shrink-0 self-end sm:self-auto">
-                  <span className="text-[11px] font-mono text-slate-400">
+                  <span className="text-[11px] font-mono text-slate-500">
                     {item.category}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition-colors" />
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
                 </div>
               </div>
             ))}
@@ -242,9 +244,9 @@ export default function CommandCorePage({ setActivePage, onOpenAuditDetail, onSe
         {/* Right (1 Col): System Service Status & Top Fraud Categories */}
         <div className="space-y-6">
           {/* Service Engine Health */}
-          <div className="glass-panel p-5 space-y-3">
-            <h2 className="text-xs font-heading font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-              <Cpu className="w-4 h-4 text-cyan-400" />
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3">
+            <h2 className="text-xs font-heading font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-2">
+              <Cpu className="w-4 h-4 text-blue-600" />
               <span>Multi-Tier Defense Engines</span>
             </h2>
 
@@ -252,15 +254,15 @@ export default function CommandCorePage({ setActivePage, onOpenAuditDetail, onSe
               {(data?.services || []).map((srv, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-2 rounded-lg bg-black/30 border border-white/[0.04] text-xs"
+                  className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs"
                 >
                   <div className="flex items-center space-x-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-slate-300 font-medium">{srv.name}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span className="text-slate-700 font-medium">{srv.name}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-[10px] font-mono">
-                    <span className="text-slate-400">{srv.latency}</span>
-                    <span className="text-emerald-400 font-bold px-1.5 py-0.2 bg-emerald-500/10 rounded">
+                    <span className="text-slate-500">{srv.latency}</span>
+                    <span className="text-emerald-700 font-bold px-1.5 py-0.5 bg-emerald-50 rounded border border-emerald-200">
                       {srv.status}
                     </span>
                   </div>
@@ -270,9 +272,9 @@ export default function CommandCorePage({ setActivePage, onOpenAuditDetail, onSe
           </div>
 
           {/* Fraud Category Distribution */}
-          <div className="glass-panel p-5 space-y-3">
-            <h2 className="text-xs font-heading font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-              <TrendingUp className="w-4 h-4 text-cyan-400" />
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3">
+            <h2 className="text-xs font-heading font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-2">
+              <TrendingUp className="w-4 h-4 text-blue-600" />
               <span>Top Fraud Threat Categories</span>
             </h2>
 
@@ -284,12 +286,12 @@ export default function CommandCorePage({ setActivePage, onOpenAuditDetail, onSe
                 return (
                   <div key={idx} className="space-y-1">
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-300 truncate">{cat.name}</span>
-                      <span className="font-mono text-cyan-400 font-bold">{cat.count} cases</span>
+                      <span className="text-slate-700 truncate font-medium">{cat.name}</span>
+                      <span className="font-mono text-blue-600 font-bold">{cat.count} cases</span>
                     </div>
-                    <div className="w-full bg-slate-800/80 rounded-full h-1.5 overflow-hidden">
+                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                       <div
-                        className="bg-gradient-to-r from-teal-500 to-cyan-400 h-full rounded-full transition-all duration-700"
+                        className="bg-blue-600 h-full rounded-full transition-all duration-700"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
