@@ -20,7 +20,7 @@ import SettingsPage from "./pages/SettingsPage";
 import { api } from "./utils/api";
 
 export default function App() {
-  const [activePage, setActivePage] = useState("command-core");
+  const [activePage, setActivePage] = useState("qr-guardian");
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [backendOnline, setBackendOnline] = useState(true);
   const [prefilledData, setPrefilledData] = useState(null);
@@ -59,8 +59,8 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05070d] text-slate-100 flex relative overflow-x-hidden">
-      {/* Background Lighting & Grid */}
+    <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex relative overflow-x-hidden">
+      {/* Background Grid */}
       <AmbientGlow />
 
       {/* Persistent Left Sidebar */}

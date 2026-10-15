@@ -71,21 +71,21 @@ export default function TransactionIntelligencePage({ prefilledData }) {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="glass-panel p-6 border-cyan-500/20 bg-gradient-to-r from-[#0b1226] to-[#080d1a]">
+      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center space-x-2 mb-1">
-              <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded">
+              <span className="px-2.5 py-0.5 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 rounded-full">
                 XGBOOST ML ENGINE
               </span>
-              <span className="text-xs text-slate-400 font-mono">
+              <span className="text-xs text-slate-500 font-mono">
                 Holdout Accuracy: 99.97%
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-heading font-extrabold text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-heading font-extrabold text-slate-900 tracking-tight">
               Transaction Intelligence Simulator
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl mt-1">
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mt-1 leading-relaxed">
               Simulate granular payment vectors and evaluate behavioral anomaly features using our trained XGBoost classifier and SHAP-style local feature attribution.
             </p>
           </div>
@@ -109,7 +109,7 @@ export default function TransactionIntelligencePage({ prefilledData }) {
                 payment_context: "Chai and bun maska",
                 transaction_type: "PAYMENT"
               })}
-              className="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-semibold"
+              className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold transition-colors"
             >
               Chai (₹140)
             </button>
@@ -134,7 +134,7 @@ export default function TransactionIntelligencePage({ prefilledData }) {
                 transaction_type: "TRANSFER",
                 payment_context: "PaySim Total Account Drain Attack"
               })}
-              className="px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-semibold"
+              className="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold transition-colors"
             >
               PaySim Drain ($180k)
             </button>
@@ -167,10 +167,10 @@ export default function TransactionIntelligencePage({ prefilledData }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Form (7 Cols) */}
-        <form onSubmit={handleSubmit} className="lg:col-span-7 glass-panel p-5 space-y-4">
-          <div className="pb-3 border-b border-white/[0.08] flex items-center justify-between">
-            <h2 className="text-sm font-heading font-bold text-white flex items-center space-x-2">
-              <CreditCard className="w-4 h-4 text-cyan-400" />
+        <form onSubmit={handleSubmit} className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+          <div className="pb-3 border-b border-slate-100 flex items-center justify-between">
+            <h2 className="text-sm font-heading font-bold text-slate-900 flex items-center space-x-2">
+              <CreditCard className="w-4 h-4 text-blue-600" />
               <span>Simulated Payment Parameters</span>
             </h2>
             <span className="text-[10px] font-mono text-slate-400">NPCI Unified Interface</span>
@@ -179,7 +179,7 @@ export default function TransactionIntelligencePage({ prefilledData }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Amount */}
             <div>
-              <label className="text-xs font-mono text-slate-300 block mb-1">
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
                 Transaction Amount (₹ INR) *
               </label>
               <input
@@ -188,19 +188,19 @@ export default function TransactionIntelligencePage({ prefilledData }) {
                 required
                 value={form.amount}
                 onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white font-mono text-sm focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 font-mono text-sm focus:outline-none focus:border-blue-500 focus:bg-white"
               />
             </div>
 
             {/* Direction */}
             <div>
-              <label className="text-xs font-mono text-slate-300 block mb-1">
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
                 Transaction Direction *
               </label>
               <select
                 value={form.direction}
                 onChange={(e) => setForm({ ...form, direction: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white font-mono text-sm focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 font-mono text-sm focus:outline-none focus:border-blue-500 focus:bg-white"
               >
                 <option value="DEBIT">DEBIT (Victim transfers funds out)</option>
                 <option value="CREDIT">CREDIT (Funds deposited to victim)</option>
@@ -209,46 +209,46 @@ export default function TransactionIntelligencePage({ prefilledData }) {
 
             {/* Sender VPA */}
             <div>
-              <label className="text-xs font-mono text-slate-300 block mb-1">
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
                 Sender UPI ID (Citizen/Payer)
               </label>
               <input
                 type="text"
                 value={form.sender_id}
                 onChange={(e) => setForm({ ...form, sender_id: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white font-mono text-xs focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 font-mono text-xs focus:outline-none focus:border-blue-500 focus:bg-white"
               />
             </div>
 
             {/* Recipient VPA */}
             <div>
-              <label className="text-xs font-mono text-slate-300 block mb-1">
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
                 Recipient UPI ID (Payee/Mule)
               </label>
               <input
                 type="text"
                 value={form.recipient_id}
                 onChange={(e) => setForm({ ...form, recipient_id: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white font-mono text-xs focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 font-mono text-xs focus:outline-none focus:border-blue-500 focus:bg-white"
               />
             </div>
 
             {/* Sender Historical Average */}
             <div>
-              <label className="text-xs font-mono text-slate-300 block mb-1">
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
                 Sender Baseline Average Amount (₹)
               </label>
               <input
                 type="number"
                 value={form.sender_avg_amount}
                 onChange={(e) => setForm({ ...form, sender_avg_amount: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white font-mono text-xs focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 font-mono text-xs focus:outline-none focus:border-blue-500 focus:bg-white"
               />
             </div>
 
             {/* Hour of Day */}
             <div>
-              <label className="text-xs font-mono text-slate-300 block mb-1">
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
                 Execution Time: {form.hour_of_day}:00 HRS
               </label>
               <input
@@ -257,7 +257,7 @@ export default function TransactionIntelligencePage({ prefilledData }) {
                 max="23"
                 value={form.hour_of_day}
                 onChange={(e) => setForm({ ...form, hour_of_day: e.target.value })}
-                className="w-full accent-cyan-400 mt-2"
+                className="w-full accent-blue-600 mt-2"
               />
               <span className="text-[10px] font-mono text-slate-500">
                 {form.hour_of_day >= 23 || form.hour_of_day <= 5 ? "⚠️ Dormant Off-Hours" : "Standard Business Hours"}
@@ -266,68 +266,68 @@ export default function TransactionIntelligencePage({ prefilledData }) {
           </div>
 
           {/* Toggle Switches */}
-          <div className="pt-3 border-t border-white/[0.08] grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-            <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg bg-black/20 hover:bg-black/40 border border-white/[0.05]">
+          <div className="pt-3 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+            <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200">
               <input
                 type="checkbox"
                 checked={form.is_collect_request === 1}
                 onChange={(e) => setForm({ ...form, is_collect_request: e.target.checked ? 1 : 0 })}
-                className="rounded accent-cyan-400"
+                className="rounded accent-blue-600"
               />
-              <span className="text-slate-300">UPI Collect Trap</span>
+              <span className="text-slate-700 font-medium">UPI Collect Trap</span>
             </label>
 
-            <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg bg-black/20 hover:bg-black/40 border border-white/[0.05]">
+            <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200">
               <input
                 type="checkbox"
                 checked={form.recipient_risk_flag === 1}
                 onChange={(e) => setForm({ ...form, recipient_risk_flag: e.target.checked ? 1 : 0 })}
-                className="rounded accent-rose-400"
+                className="rounded accent-rose-600"
               />
-              <span className="text-slate-300">Flagged Mule VPA</span>
+              <span className="text-slate-700 font-medium">Flagged Mule VPA</span>
             </label>
 
-            <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg bg-black/20 hover:bg-black/40 border border-white/[0.05]">
+            <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200">
               <input
                 type="checkbox"
                 checked={form.device_is_new === 1}
                 onChange={(e) => setForm({ ...form, device_is_new: e.target.checked ? 1 : 0 })}
-                className="rounded accent-cyan-400"
+                className="rounded accent-blue-600"
               />
-              <span className="text-slate-300">New Device Login</span>
+              <span className="text-slate-700 font-medium">New Device Login</span>
             </label>
 
-            <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg bg-black/20 hover:bg-black/40 border border-white/[0.05]">
+            <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200">
               <input
                 type="checkbox"
                 checked={form.device_rooted === 1}
                 onChange={(e) => setForm({ ...form, device_rooted: e.target.checked ? 1 : 0 })}
-                className="rounded accent-rose-400"
+                className="rounded accent-rose-600"
               />
-              <span className="text-slate-300">Rooted / Jailbroken</span>
+              <span className="text-slate-700 font-medium">Rooted / Jailbroken</span>
             </label>
 
-            <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg bg-black/20 hover:bg-black/40 border border-white/[0.05]">
+            <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200">
               <input
                 type="checkbox"
                 checked={form.recipient_is_new === 1}
                 onChange={(e) => setForm({ ...form, recipient_is_new: e.target.checked ? 1 : 0 })}
-                className="rounded accent-cyan-400"
+                className="rounded accent-blue-600"
               />
-              <span className="text-slate-300">First-Time Payee</span>
+              <span className="text-slate-700 font-medium">First-Time Payee</span>
             </label>
           </div>
 
           {/* Context Note */}
           <div>
-            <label className="text-xs font-mono text-slate-300 block mb-1">
+            <label className="text-xs font-semibold text-slate-700 block mb-1">
               Transaction Note / Context Reference
             </label>
             <input
               type="text"
               value={form.payment_context}
               onChange={(e) => setForm({ ...form, payment_context: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white text-xs focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:outline-none focus:border-blue-500 focus:bg-white"
               placeholder="e.g. Amazon Refund Approval Ref 5000"
             />
           </div>
@@ -336,13 +336,13 @@ export default function TransactionIntelligencePage({ prefilledData }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-black font-heading font-bold text-sm shadow-cyan-glow transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+            className="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
           >
             {loading ? (
               <span>Executing XGBoost Classifier Inference...</span>
             ) : (
               <>
-                <Send className="w-4 h-4 text-black" />
+                <Send className="w-4 h-4 text-white" />
                 <span>Evaluate Transaction Risk Score</span>
               </>
             )}
@@ -352,10 +352,10 @@ export default function TransactionIntelligencePage({ prefilledData }) {
         {/* Right Output Panel (5 Cols) */}
         <div className="lg:col-span-5 space-y-5">
           {result ? (
-            <div className="glass-panel p-5 space-y-5 border-cyan-500/30 animate-in fade-in duration-300">
-              <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
-                <h3 className="text-sm font-heading font-bold text-white flex items-center space-x-2">
-                  <Activity className="w-4 h-4 text-cyan-400" />
+            <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-5 shadow-sm animate-in fade-in duration-300">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 className="text-sm font-heading font-bold text-slate-900 flex items-center space-x-2">
+                  <Activity className="w-4 h-4 text-blue-600" />
                   <span>Model Risk Assessment</span>
                 </h3>
                 <span className="text-[10px] font-mono text-slate-400">
@@ -369,27 +369,27 @@ export default function TransactionIntelligencePage({ prefilledData }) {
               {/* Decision Box */}
               <div className={`p-4 rounded-xl border ${
                 result.risk_score >= 60
-                  ? "bg-rose-950/20 border-rose-500/40 text-rose-300"
-                  : "bg-emerald-950/20 border-emerald-500/40 text-emerald-300"
+                  ? "bg-rose-50 border-rose-200 text-rose-800"
+                  : "bg-emerald-50 border-emerald-200 text-emerald-800"
               }`}>
                 <div className="flex items-center space-x-2 mb-1">
                   {result.risk_score >= 60 ? (
-                    <ShieldAlert className="w-5 h-5 text-rose-400" />
+                    <ShieldAlert className="w-5 h-5 text-rose-600 shrink-0" />
                   ) : (
-                    <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                    <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
                   )}
-                  <span className="text-sm font-heading font-bold text-white">
+                  <span className="text-sm font-heading font-bold text-slate-900">
                     {result.category}
                   </span>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <p className="text-xs leading-relaxed">
                   {result.action_description}
                 </p>
               </div>
 
               {/* Feature Attribution (SHAP-style) */}
               <div className="space-y-2">
-                <span className="text-xs font-heading font-semibold text-white block">
+                <span className="text-xs font-heading font-semibold text-slate-900 block">
                   Contributing Risk Drivers (SHAP Local Attribution)
                 </span>
                 <div className="space-y-2">
@@ -398,23 +398,23 @@ export default function TransactionIntelligencePage({ prefilledData }) {
                     return (
                       <div
                         key={idx}
-                        className="p-2.5 rounded-lg bg-black/40 border border-white/[0.06] text-xs space-y-1"
+                        className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-slate-200">
+                          <span className="font-semibold text-slate-800">
                             {feat.feature}
                           </span>
                           <span
-                            className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded ${
+                            className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
                               isRisk
-                                ? "bg-rose-500/20 text-rose-300"
-                                : "bg-emerald-500/20 text-emerald-300"
+                                ? "bg-rose-50 text-rose-700 border border-rose-200"
+                                : "bg-emerald-50 text-emerald-700 border border-emerald-200"
                             }`}
                           >
                             {isRisk ? `+${feat.weight}% Risk` : `${feat.weight}% Safe`}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-400">
+                        <p className="text-[11px] text-slate-600">
                           {feat.explanation}
                         </p>
                       </div>
@@ -459,19 +459,19 @@ export default function TransactionIntelligencePage({ prefilledData }) {
               )}
 
               {/* Summary */}
-              <div className="p-3 bg-white/[0.03] rounded-lg border border-white/[0.05] text-[11px] text-slate-300 font-mono">
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-[11px] text-slate-600 font-mono">
                 {result.explanation}
               </div>
             </div>
           ) : (
-            <div className="glass-panel p-8 text-center flex flex-col items-center justify-center h-full min-h-[380px] space-y-3">
-              <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+            <div className="bg-white border border-slate-200 rounded-xl p-8 text-center flex flex-col items-center justify-center h-full min-h-[380px] space-y-3 shadow-sm">
+              <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-600">
                 <Activity className="w-8 h-8 animate-pulse" />
               </div>
-              <h3 className="text-base font-heading font-bold text-white">
+              <h3 className="text-base font-heading font-bold text-slate-900">
                 Awaiting Transaction Vector
               </h3>
-              <p className="text-xs text-slate-400 max-w-sm">
+              <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
                 Enter simulated payment parameters or select a pre-configured CyberCup test scenario above to execute real XGBoost inference.
               </p>
             </div>

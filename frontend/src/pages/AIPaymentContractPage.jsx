@@ -87,7 +87,6 @@ export default function AIPaymentContractPage({ prefilledData, onOpenComplaintMo
   const [loading, setLoading] = useState(false);
   const [evaluation, setEvaluation] = useState(null);
 
-  // Automatically evaluate on mount or when preset is chosen
   useEffect(() => {
     handleEvaluate();
   }, []);
@@ -130,31 +129,31 @@ export default function AIPaymentContractPage({ prefilledData, onOpenComplaintMo
   return (
     <div className="space-y-6">
       {/* Flagship Innovation Banner */}
-      <div className="glass-panel-elevated p-6 border-cyan-500/40 bg-gradient-to-r from-[#0d1633] via-[#0b1c38] to-[#09152b] relative overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-2 max-w-2xl">
             <div className="flex items-center space-x-2">
-              <span className="px-2.5 py-0.5 text-[11px] font-mono font-bold bg-cyan-500/25 text-cyan-300 border border-cyan-500/50 rounded-full flex items-center space-x-1.5 shadow-cyan-glow">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="px-2.5 py-0.5 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 rounded-full flex items-center space-x-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                 <span>PAYPROOF ARCHITECTURE • KEY INNOVATION</span>
               </span>
-              <span className="text-xs text-slate-400 font-mono">
+              <span className="text-xs text-slate-500 font-mono">
                 Predicate Invariance Engine
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 tracking-tight">
               AI Payment Contract Verification Laboratory
             </h1>
 
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Unlike conventional classifiers that only examine transaction records in isolation, <strong className="text-white">PaySentriX compares what the user was promised against what the payment actually executes</strong>. It translates claims into testable safety predicates before funds leave the account.
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Unlike conventional classifiers that only examine transaction records in isolation, <strong className="text-slate-900">PaySentriX compares what the user was promised against what the payment actually executes</strong>. It translates claims into testable safety predicates before funds leave the account.
             </p>
           </div>
 
           {/* Quick Select Presets */}
           <div className="space-y-2 shrink-0">
-            <span className="text-[11px] font-mono text-cyan-400 uppercase tracking-wider block font-semibold">
+            <span className="text-[11px] font-mono text-blue-600 uppercase tracking-wider block font-semibold">
               Select Preset CyberCup Scenario
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -162,12 +161,12 @@ export default function AIPaymentContractPage({ prefilledData, onOpenComplaintMo
                 <button
                   key={idx}
                   onClick={() => applyPreset(p)}
-                  className="px-3 py-2 rounded-xl bg-white/[0.05] hover:bg-cyan-500/15 border border-white/[0.08] hover:border-cyan-500/35 text-left transition-all text-xs group"
+                  className="px-3 py-2 rounded-xl bg-slate-50 hover:bg-blue-50/60 border border-slate-200 hover:border-blue-300 text-left transition-all text-xs group"
                 >
-                  <div className="font-semibold text-slate-200 group-hover:text-cyan-300 truncate">
+                  <div className="font-semibold text-slate-800 group-hover:text-blue-600 truncate">
                     {p.title}
                   </div>
-                  <div className="text-[10px] text-slate-400 font-mono">
+                  <div className="text-[10px] text-slate-500 font-mono">
                     {p.tag}
                   </div>
                 </button>
@@ -178,10 +177,10 @@ export default function AIPaymentContractPage({ prefilledData, onOpenComplaintMo
       </div>
 
       {/* Contract Input Workbench */}
-      <form onSubmit={handleEvaluate} className="glass-panel p-5 space-y-4">
-        <div className="pb-3 border-b border-white/[0.08] flex items-center justify-between">
-          <h2 className="text-sm font-heading font-bold text-white flex items-center space-x-2">
-            <FileCheck2 className="w-4 h-4 text-cyan-400" />
+      <form onSubmit={handleEvaluate} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+        <div className="pb-3 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="text-sm font-heading font-bold text-slate-900 flex items-center space-x-2">
+            <FileCheck2 className="w-4 h-4 text-blue-600" />
             <span>Interactive Contract Verification Parameters</span>
           </h2>
           <span className="text-[10px] font-mono text-slate-400">
@@ -193,29 +192,29 @@ export default function AIPaymentContractPage({ prefilledData, onOpenComplaintMo
           {/* Left: Promised Message */}
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-mono text-cyan-300 block mb-1 font-semibold flex items-center justify-between">
+              <label className="text-xs font-semibold text-blue-600 block mb-1 flex items-center justify-between">
                 <span>1. Lure Message / Promised Communication *</span>
-                <span className="text-[10px] text-slate-400">Natural Language</span>
+                <span className="text-[10px] text-slate-400 font-mono font-normal">Natural Language</span>
               </label>
               <textarea
                 rows={4}
                 required
                 value={promiseMessage}
                 onChange={(e) => setPromiseMessage(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-cyan-500/25 focus:border-cyan-400 text-white text-xs leading-relaxed focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-500 text-slate-900 text-xs leading-relaxed focus:outline-none focus:bg-white"
                 placeholder="Paste the SMS, WhatsApp, or phone prompt that promised a refund, bill payment, cashback, or prize..."
               />
             </div>
 
             <div>
-              <label className="text-xs font-mono text-slate-300 block mb-1">
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
                 Claimed Institution / Enterprise Brand
               </label>
               <input
                 type="text"
                 value={claimedEntity}
                 onChange={(e) => setClaimedEntity(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white text-xs focus:outline-none"
+                className="w-full px-3.5 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-500 text-slate-900 text-xs focus:outline-none focus:bg-white"
                 placeholder="e.g. Amazon India, BESCOM, SBI Bank"
               />
             </div>
@@ -223,18 +222,18 @@ export default function AIPaymentContractPage({ prefilledData, onOpenComplaintMo
 
           {/* Right: Actual Payment Execution Details */}
           <div className="space-y-3">
-            <label className="text-xs font-mono text-rose-300 block mb-1 font-semibold flex items-center justify-between">
+            <label className="text-xs font-semibold text-rose-600 block mb-1 flex items-center justify-between">
               <span>2. Actual Payment Execution Parameters *</span>
-              <span className="text-[10px] text-slate-400">NPCI UPI Intent Payload</span>
+              <span className="text-[10px] text-slate-400 font-mono font-normal">NPCI UPI Intent Payload</span>
             </label>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <span className="text-[11px] font-mono text-slate-400 block mb-1">Executing Direction</span>
+                <span className="text-[11px] font-semibold text-slate-600 block mb-1">Executing Direction</span>
                 <select
                   value={actualDirection}
                   onChange={(e) => setActualDirection(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white font-mono text-xs focus:outline-none font-bold"
+                  className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-500 text-slate-900 font-mono text-xs focus:outline-none font-bold"
                 >
                   <option value="DEBIT">DEBIT (Funds Deducted From User)</option>
                   <option value="CREDIT">CREDIT (Funds Received By User)</option>
@@ -242,38 +241,38 @@ export default function AIPaymentContractPage({ prefilledData, onOpenComplaintMo
               </div>
 
               <div>
-                <span className="text-[11px] font-mono text-slate-400 block mb-1">Executing Amount (₹)</span>
+                <span className="text-[11px] font-semibold text-slate-600 block mb-1">Executing Amount (₹)</span>
                 <input
                   type="number"
                   step="any"
                   required
                   value={actualAmount}
                   onChange={(e) => setActualAmount(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white font-mono text-xs focus:outline-none font-bold"
+                  className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-500 text-slate-900 font-mono text-xs focus:outline-none font-bold"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <span className="text-[11px] font-mono text-slate-400 block mb-1">Recipient VPA</span>
+                <span className="text-[11px] font-semibold text-slate-600 block mb-1">Recipient VPA</span>
                 <input
                   type="text"
                   required
                   value={recipientVpa}
                   onChange={(e) => setRecipientVpa(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white font-mono text-xs focus:outline-none"
+                  className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-500 text-slate-900 font-mono text-xs focus:outline-none"
                   placeholder="e.g. amz.refund.desk@ybl"
                 />
               </div>
 
               <div>
-                <span className="text-[11px] font-mono text-slate-400 block mb-1">Transaction Note</span>
+                <span className="text-[11px] font-semibold text-slate-600 block mb-1">Transaction Note</span>
                 <input
                   type="text"
                   value={transactionNote}
                   onChange={(e) => setTransactionNote(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white text-xs focus:outline-none"
+                  className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-500 text-slate-900 text-xs focus:outline-none"
                   placeholder="e.g. Amazon Refund Voucher"
                 />
               </div>
@@ -283,13 +282,13 @@ export default function AIPaymentContractPage({ prefilledData, onOpenComplaintMo
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-black font-heading font-bold text-sm shadow-cyan-glow transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                className="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
               >
                 {loading ? (
                   <span>Evaluating Safety Predicates & Contradictions...</span>
                 ) : (
                   <>
-                    <Zap className="w-4 h-4 text-black" />
+                    <Zap className="w-4 h-4 text-white" />
                     <span>Run AI Payment Contract Verification</span>
                   </>
                 )}
