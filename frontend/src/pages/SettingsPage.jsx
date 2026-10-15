@@ -64,29 +64,29 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       {/* Banner */}
-      <div className="glass-panel p-6 border-cyan-500/20 bg-gradient-to-r from-[#0b1226] to-[#080d1a]">
+      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center space-x-2 mb-1">
-              <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded flex items-center space-x-1">
-                <Sliders className="w-3 h-3 text-cyan-400" />
-                <span>CYBERCUP 6.0 CONFIGURATION</span>
+              <span className="px-2.5 py-0.5 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 rounded-full flex items-center space-x-1">
+                <Sliders className="w-3.5 h-3.5 text-blue-600" />
+                <span>SYSTEM CONFIGURATION</span>
               </span>
-              <span className="text-xs text-slate-400 font-mono">
+              <span className="text-xs text-slate-500 font-mono">
                 System Core Control
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-heading font-extrabold text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-heading font-extrabold text-slate-900 tracking-tight">
               System Core & Defense Engine Settings
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl mt-1">
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mt-1 leading-relaxed">
               Calibrate risk thresholds, inspect loaded model artifacts, test backend connection latency, and manage the national merchant registry.
             </p>
           </div>
 
           <button
             onClick={checkSystem}
-            className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-slate-200 border border-white/[0.1] text-xs font-semibold transition-all self-start sm:self-auto shrink-0"
+            className="flex items-center space-x-2 px-3.5 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold transition-all shadow-sm self-start sm:self-auto shrink-0"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Ping Backend API</span>
@@ -98,49 +98,49 @@ export default function SettingsPage() {
         {/* Left: Engine Status & Thresholds (6 Cols) */}
         <div className="lg:col-span-6 space-y-6">
           {/* Active Engines Card */}
-          <div className="glass-panel p-5 space-y-4">
-            <h2 className="text-sm font-heading font-bold text-white flex items-center space-x-2 pb-3 border-b border-white/[0.08]">
-              <Cpu className="w-4 h-4 text-cyan-400" />
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+            <h2 className="text-sm font-heading font-bold text-slate-900 flex items-center space-x-2 pb-3 border-b border-slate-100">
+              <Cpu className="w-4 h-4 text-blue-600" />
               <span>Loaded Machine Learning Engines</span>
             </h2>
 
             <div className="space-y-2.5 text-xs font-mono">
-              <div className="p-3 rounded-xl bg-black/40 border border-white/[0.06] flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div>
-                  <div className="text-white font-semibold">Primary Supervised Model</div>
-                  <div className="text-[11px] text-slate-400">XGBoost Classifier (120 Trees)</div>
+                  <div className="text-slate-900 font-sans font-semibold">Primary Supervised Model</div>
+                  <div className="text-[11px] text-slate-500">XGBoost Classifier (120 Trees)</div>
                 </div>
-                <span className="text-emerald-400 font-bold px-2 py-0.5 bg-emerald-500/10 rounded">
+                <span className="text-emerald-700 font-bold px-2 py-0.5 bg-emerald-50 rounded border border-emerald-200">
                   99.97% Acc
                 </span>
               </div>
 
-              <div className="p-3 rounded-xl bg-black/40 border border-white/[0.06] flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div>
-                  <div className="text-white font-semibold">Unsupervised Anomaly Lab</div>
-                  <div className="text-[11px] text-slate-400">Isolation Forest (Contamination 0.08)</div>
+                  <div className="text-slate-900 font-sans font-semibold">Unsupervised Anomaly Lab</div>
+                  <div className="text-[11px] text-slate-500">Isolation Forest (Contamination 0.08)</div>
                 </div>
-                <span className="text-teal-400 font-bold px-2 py-0.5 bg-teal-500/10 rounded">
+                <span className="text-teal-700 font-bold px-2 py-0.5 bg-teal-50 rounded border border-teal-200">
                   ONLINE
                 </span>
               </div>
 
-              <div className="p-3 rounded-xl bg-black/40 border border-white/[0.06] flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div>
-                  <div className="text-white font-semibold">Multilingual NLP Threat Classifier</div>
-                  <div className="text-[11px] text-slate-400">Calibrated LinearSVC + TF-IDF (1-2 Grams)</div>
+                  <div className="text-slate-900 font-sans font-semibold">Multilingual NLP Threat Classifier</div>
+                  <div className="text-[11px] text-slate-500">Calibrated LinearSVC + TF-IDF (1-2 Grams)</div>
                 </div>
-                <span className="text-cyan-400 font-bold px-2 py-0.5 bg-cyan-500/10 rounded">
+                <span className="text-blue-700 font-bold px-2 py-0.5 bg-blue-50 rounded border border-blue-200">
                   100% Precision
                 </span>
               </div>
 
-              <div className="p-3 rounded-xl bg-black/40 border border-white/[0.06] flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div>
-                  <div className="text-white font-semibold">AI Payment Contract Engine</div>
-                  <div className="text-[11px] text-slate-400">Direction Invariance & 5 Predicates</div>
+                  <div className="text-slate-900 font-sans font-semibold">AI Payment Contract Engine</div>
+                  <div className="text-[11px] text-slate-500">Direction Invariance & 5 Predicates</div>
                 </div>
-                <span className="text-emerald-400 font-bold px-2 py-0.5 bg-emerald-500/10 rounded">
+                <span className="text-emerald-700 font-bold px-2 py-0.5 bg-emerald-50 rounded border border-emerald-200">
                   ACTIVE
                 </span>
               </div>
@@ -150,7 +150,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleRetrain}
                 disabled={retraining}
-                className="w-full py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/35 text-xs font-semibold transition-all flex items-center justify-center space-x-2"
+                className="w-full py-2.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-all flex items-center justify-center space-x-2"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${retraining ? "animate-spin" : ""}`} />
                 <span>{retraining ? "Retraining Models..." : "Trigger Model Retraining Pipeline"}</span>
@@ -159,17 +159,17 @@ export default function SettingsPage() {
           </div>
 
           {/* Threshold Tuning */}
-          <div className="glass-panel p-5 space-y-4">
-            <h2 className="text-sm font-heading font-bold text-white flex items-center space-x-2 pb-3 border-b border-white/[0.08]">
-              <Sliders className="w-4 h-4 text-cyan-400" />
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+            <h2 className="text-sm font-heading font-bold text-slate-900 flex items-center space-x-2 pb-3 border-b border-slate-100">
+              <Sliders className="w-4 h-4 text-blue-600" />
               <span>Risk Tier Calibration Thresholds</span>
             </h2>
 
             <div className="space-y-3 text-xs font-mono">
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="text-emerald-400 font-bold">Safe Tier Boundary (0 to {thresholds.safeMax})</span>
-                  <span className="text-slate-400">Instant Authorization</span>
+                  <span className="text-emerald-700 font-bold font-sans">Safe Tier Boundary (0 to {thresholds.safeMax})</span>
+                  <span className="text-slate-500 font-sans">Instant Authorization</span>
                 </div>
                 <input
                   type="range"
@@ -177,14 +177,14 @@ export default function SettingsPage() {
                   max="40"
                   value={thresholds.safeMax}
                   onChange={(e) => setThresholds({ ...thresholds, safeMax: parseInt(e.target.value) })}
-                  className="w-full accent-emerald-400"
+                  className="w-full accent-emerald-600"
                 />
               </div>
 
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="text-amber-400 font-bold">Medium / Suspicious ({thresholds.safeMax + 1} to {thresholds.mediumMax})</span>
-                  <span className="text-slate-400">Show Counterparty Badge</span>
+                  <span className="text-amber-700 font-bold font-sans">Medium / Suspicious ({thresholds.safeMax + 1} to {thresholds.mediumMax})</span>
+                  <span className="text-slate-500 font-sans">Show Counterparty Badge</span>
                 </div>
                 <input
                   type="range"
@@ -192,14 +192,14 @@ export default function SettingsPage() {
                   max="70"
                   value={thresholds.mediumMax}
                   onChange={(e) => setThresholds({ ...thresholds, mediumMax: parseInt(e.target.value) })}
-                  className="w-full accent-amber-400"
+                  className="w-full accent-amber-600"
                 />
               </div>
 
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="text-rose-400 font-bold">Critical Threat ({thresholds.highMax + 1} to 100)</span>
-                  <span className="text-slate-400">Immediate Block & No-PIN</span>
+                  <span className="text-rose-700 font-bold font-sans">Critical Threat ({thresholds.highMax + 1} to 100)</span>
+                  <span className="text-slate-500 font-sans">Immediate Block & No-PIN</span>
                 </div>
                 <input
                   type="range"
@@ -207,7 +207,7 @@ export default function SettingsPage() {
                   max="95"
                   value={thresholds.highMax}
                   onChange={(e) => setThresholds({ ...thresholds, highMax: parseInt(e.target.value) })}
-                  className="w-full accent-rose-400"
+                  className="w-full accent-rose-600"
                 />
               </div>
             </div>
@@ -216,18 +216,18 @@ export default function SettingsPage() {
 
         {/* Right: Trusted Merchant Registry (6 Cols) */}
         <div className="lg:col-span-6 space-y-6">
-          <div className="glass-panel p-5 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
-              <h2 className="text-sm font-heading font-bold text-white flex items-center space-x-2">
-                <Store className="w-4 h-4 text-cyan-400" />
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h2 className="text-sm font-heading font-bold text-slate-900 flex items-center space-x-2">
+                <Store className="w-4 h-4 text-blue-600" />
                 <span>Enrolled Enterprise Merchant Registry</span>
               </h2>
-              <span className="text-[10px] font-mono text-cyan-400 font-bold">
+              <span className="text-[10px] font-mono text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
                 {merchants.length} Enrolled Merchants
               </span>
             </div>
 
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-slate-600">
               The counterparty trust registry anchors QR and payment authenticity. Any merchant claiming these brands from a non-registered VPA is automatically classified as a physical sticker swap.
             </p>
 
@@ -235,21 +235,21 @@ export default function SettingsPage() {
               {merchants.map((m) => (
                 <div
                   key={m.id}
-                  className="p-3 rounded-xl bg-black/40 border border-white/[0.06] text-xs font-mono space-y-1"
+                  className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono space-y-1"
                 >
                   <div className="flex justify-between items-center">
-                    <span className="text-white font-heading font-bold text-sm">
+                    <span className="text-slate-900 font-heading font-bold text-sm">
                       {m.brand_name}
                     </span>
-                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-300 font-bold">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold">
                       {m.verification_tier}
                     </span>
                   </div>
-                  <div className="flex justify-between text-slate-400 text-[11px]">
-                    <span>VPA: <strong className="text-cyan-300">{m.registered_vpa}</strong></span>
+                  <div className="flex justify-between text-slate-600 text-[11px]">
+                    <span>VPA: <strong className="text-blue-700">{m.registered_vpa}</strong></span>
                     <span>MCC: {m.mcc_code}</span>
                   </div>
-                  <div className="text-[10px] text-slate-500 truncate">
+                  <div className="text-[10px] text-slate-400 truncate">
                     Terminal Key: {m.terminal_public_key || "POS_AUTHENTICATED"}
                   </div>
                 </div>
@@ -258,12 +258,12 @@ export default function SettingsPage() {
           </div>
 
           {/* Hackathon Metadata Box */}
-          <div className="p-4 rounded-xl bg-cyan-950/20 border border-cyan-500/30 text-xs space-y-1.5 font-mono">
-            <div className="flex items-center space-x-2 text-cyan-300 font-bold">
-              <Zap className="w-4 h-4 text-amber-400" />
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
+            <div className="flex items-center space-x-2 text-slate-900 font-bold font-sans">
+              <Zap className="w-4 h-4 text-blue-600" />
               <span>CyberCup 6.0 Project Architecture</span>
             </div>
-            <p className="text-slate-300 text-[11px] leading-relaxed">
+            <p className="text-slate-600 text-[11px] leading-relaxed">
               Name: <strong>{BRAND.name}</strong> • Tagline: <em>"{BRAND.tagline}"</em><br />
               Stack: Python FastAPI + Scikit-Learn + XGBoost + Isolation Forest + React 18 + TailwindCSS + Three.js.
             </p>

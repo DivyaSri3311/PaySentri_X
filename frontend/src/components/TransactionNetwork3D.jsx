@@ -188,11 +188,11 @@ export default function TransactionNetwork3D() {
   }, []);
 
   return (
-    <div className="relative w-full h-[320px] sm:h-[380px] rounded-2xl overflow-hidden glass-panel border-cyan-500/20 bg-gradient-to-b from-[#080d1e]/90 to-[#04060d]">
+    <div className="relative w-full h-[320px] sm:h-[380px] rounded-xl overflow-hidden border border-slate-200 bg-[#0f172a]">
       {/* Title & Legend Header */}
       <div className="absolute top-3 left-4 right-4 flex items-center justify-between z-10 pointer-events-none">
         <div>
-          <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-blue-400 font-semibold">
             Interactive Threat Topology
           </span>
           <h3 className="text-sm font-heading font-bold text-white">
@@ -221,7 +221,7 @@ export default function TransactionNetwork3D() {
 
       {/* Hover Card */}
       {hoveredNode && (
-        <div className="absolute bottom-3 left-4 p-2.5 rounded-xl bg-[#0d142b]/95 border border-cyan-500/40 shadow-2xl backdrop-blur-md z-20 pointer-events-none animate-in fade-in zoom-in-95">
+        <div className="absolute bottom-3 left-4 p-3 rounded-xl bg-white/95 border border-slate-200 shadow-xl backdrop-blur-md z-20 pointer-events-none animate-in fade-in zoom-in-95">
           <div className="flex items-center space-x-2 mb-1">
             <span
               className="w-2.5 h-2.5 rounded-full"
@@ -230,19 +230,19 @@ export default function TransactionNetwork3D() {
                   hoveredNode.tier === "CRITICAL" ? "#ef4444" : "#10b981",
               }}
             />
-            <span className="text-xs font-heading font-bold text-white">
+            <span className="text-xs font-heading font-bold text-slate-900">
               {hoveredNode.label}
             </span>
           </div>
-          <div className="text-[11px] font-mono text-slate-300 space-y-0.5">
-            <div>Role: <span className="text-cyan-300">{hoveredNode.role}</span></div>
-            <div>Risk Status: <span className={hoveredNode.tier === "CRITICAL" ? "text-rose-400 font-bold" : "text-emerald-400 font-semibold"}>{hoveredNode.tier}</span></div>
+          <div className="text-[11px] font-mono text-slate-600 space-y-0.5">
+            <div>Role: <span className="text-blue-600 font-semibold">{hoveredNode.role}</span></div>
+            <div>Risk Status: <span className={hoveredNode.tier === "CRITICAL" ? "text-rose-600 font-bold" : "text-emerald-600 font-semibold"}>{hoveredNode.tier}</span></div>
           </div>
         </div>
       )}
 
       {/* Instruction Tip */}
-      <div className="absolute bottom-3 right-4 text-[10px] font-mono text-slate-500 pointer-events-none hidden sm:block">
+      <div className="absolute bottom-3 right-4 text-[10px] font-mono text-slate-400 pointer-events-none hidden sm:block">
         Hover nodes to inspect forensic profile • Pulsing particles show live fund vectors
       </div>
     </div>

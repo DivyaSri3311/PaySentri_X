@@ -14,15 +14,15 @@ export const BRAND = {
 };
 
 export const NAVIGATION_ITEMS = [
-  { id: "command-core", label: "Command Core", icon: "LayoutDashboard", badge: "Live" },
-  { id: "transaction-intel", label: "Transaction Intelligence", icon: "Activity", badge: "ML" },
-  { id: "ai-payment-contract", label: "AI Payment Contract", icon: "ShieldAlert", badge: "Key Innovation", highlight: true },
-  { id: "message-intel", label: "Message Intelligence", icon: "MessageSquareWarning", badge: "NLP" },
-  { id: "link-scanner", label: "Payment Link Scanner", icon: "Link2", badge: "SSRF Safe" },
-  { id: "qr-guardian", label: "QR Guardian", icon: "QrCode", badge: "Registry" },
-  { id: "fraud-evolution", label: "Fraud Evolution Lab", icon: "Cpu", badge: "Multi-Tier" },
-  { id: "data-science-studio", label: "Data Science Studio", icon: "BarChart3", badge: "Holdout" },
-  { id: "audit-history", label: "Audit History", icon: "FileText", badge: "Forensics" },
+  { id: "command-core", label: "Command Core", icon: "Activity", badge: "Live" },
+  { id: "transaction-intel", label: "Transaction Intelligence", icon: "TrendingUp" },
+  { id: "ai-payment-contract", label: "AI Payment Contract", icon: "ShieldAlert", badge: "New", highlight: true },
+  { id: "message-intel", label: "Message Intelligence", icon: "MessageSquareWarning" },
+  { id: "link-scanner", label: "Payment Link Scanner", icon: "Link2" },
+  { id: "qr-guardian", label: "QR Guardian", icon: "QrCode" },
+  { id: "fraud-evolution", label: "Fraud Evolution Lab", icon: "Cpu" },
+  { id: "data-science-studio", label: "Data Science Studio", icon: "BarChart3" },
+  { id: "audit-history", label: "Audit History", icon: "FileText" },
   { id: "settings", label: "System Core & Settings", icon: "Sliders", badge: "Config" },
 ];
 
