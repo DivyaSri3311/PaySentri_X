@@ -2,19 +2,21 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   QrCode,
   Upload,
+  Camera,
+  CameraOff,
   CheckCircle,
   XCircle,
   AlertTriangle,
   ShieldCheck,
   ShieldAlert,
   Sparkles,
-  Camera,
   Store,
   Key,
   Eye,
   EyeOff,
-  Cpu,
   Bot,
+  RefreshCw,
+  SwitchCamera,
   Layers,
   ExternalLink
 } from "lucide-react";
@@ -53,7 +55,29 @@ const PRESET_QR_SCENARIOS = [
   }
 ];
 
+// Synthesize pleasant scan beep audio
+function playScanBeep() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, ctx.currentTime); // A5 note
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.15);
+  } catch (e) {
+    // Ignore audio permission block
+  }
+}
+
 export default function QRGuardianPage({ prefilledData }) {
+  const [activeInputMode, setActiveInputMode] = useState("camera"); // "camera" | "upload"
   const [qrText, setQrText] = useState(prefilledData?.qr_text || PRESET_QR_SCENARIOS[0].qr_text);
   const [claimedBrand, setClaimedBrand] = useState(prefilledData?.claimed_store_brand || PRESET_QR_SCENARIOS[0].claimed_brand);
   const [posSignature, setPosSignature] = useState(prefilledData?.pos_signature || PRESET_QR_SCENARIOS[0].pos_signature);
@@ -63,6 +87,15 @@ export default function QRGuardianPage({ prefilledData }) {
   const [result, setResult] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
+  // Live Camera Scanner States
+  const [isScanning, setIsScanning] = useState(false);
+  const [cameraError, setCameraError] = useState(null);
+  const [facingMode, setFacingMode] = useState("environment"); // "environment" (back) or "user" (front/webcam)
+
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
+  const animFrameRef = useRef(null);
   const fileInputRef = useRef(null);
 
   const handleSaveApiKey = (val) => {
@@ -70,16 +103,112 @@ export default function QRGuardianPage({ prefilledData }) {
     localStorage.setItem("paysentrix_gemini_api_key", val);
   };
 
-  const handleVerify = async (e) => {
-    if (e) e.preventDefault();
-    if (!qrText.trim()) return;
+  // Clean up camera stream on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
+  const startCamera = async () => {
+    stopCamera();
+    setCameraError(null);
+    setIsScanning(true);
+
+    try {
+      const constraints = {
+        video: {
+          facingMode: facingMode,
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.setAttribute("playsinline", "true");
+        await videoRef.current.play();
+        requestAnimationFrame(tickScan);
+      }
+    } catch (err) {
+      console.error("Camera access failed:", err);
+      setCameraError(
+        err.name === "NotAllowedError"
+          ? "Camera permission was denied. Please allow camera access in your browser."
+          : `Camera error: ${err.message || "No camera device found."}`
+      );
+      setIsScanning(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setIsScanning(false);
+  };
+
+  const toggleFacingMode = () => {
+    setFacingMode((prev) => (prev === "environment" ? "user" : "environment"));
+    if (isScanning) {
+      stopCamera();
+      setTimeout(startCamera, 200);
+    }
+  };
+
+  const tickScan = () => {
+    if (!videoRef.current || videoRef.current.readyState !== videoRef.current.HAVE_ENOUGH_DATA) {
+      animFrameRef.current = requestAnimationFrame(tickScan);
+      return;
+    }
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current || document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+      inversionAttempts: "dontInvert"
+    });
+
+    if (code && code.data) {
+      playScanBeep();
+      const snapshot = canvas.toDataURL("image/jpeg", 0.85);
+      setImagePreview(snapshot);
+      setQrText(code.data);
+      stopCamera();
+
+      // Automatically execute fraud verification on scanned QR!
+      runVerification(code.data, snapshot);
+      return;
+    }
+
+    animFrameRef.current = requestAnimationFrame(tickScan);
+  };
+
+  const runVerification = async (textToVerify = qrText, snapshotToVerify = imagePreview) => {
+    if (!textToVerify.trim()) return;
     setLoading(true);
     try {
       const res = await api.verifyQR(
-        qrText,
+        textToVerify,
         claimedBrand,
         posSignature,
-        imagePreview,
+        snapshotToVerify,
         geminiApiKey || null
       );
       setResult(res);
@@ -88,6 +217,11 @@ export default function QRGuardianPage({ prefilledData }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleManualSubmit = (e) => {
+    if (e) e.preventDefault();
+    runVerification();
   };
 
   const handleFileUpload = (e) => {
@@ -109,9 +243,9 @@ export default function QRGuardianPage({ prefilledData }) {
         const code = jsQR(imageData.data, imageData.width, imageData.height);
 
         if (code) {
+          playScanBeep();
           setQrText(code.data);
-          // If Gemini key is set or user uploaded standee, run verification immediately
-          setTimeout(() => handleVerify(), 100);
+          runVerification(code.data, dataUrl);
         }
       };
       image.src = dataUrl;
@@ -120,6 +254,7 @@ export default function QRGuardianPage({ prefilledData }) {
   };
 
   const loadPreset = (preset) => {
+    stopCamera();
     setQrText(preset.qr_text);
     setClaimedBrand(preset.claimed_brand);
     setPosSignature(preset.pos_signature || "");
@@ -130,24 +265,24 @@ export default function QRGuardianPage({ prefilledData }) {
 
   return (
     <div className="space-y-6">
-      {/* Banner */}
+      {/* Header Banner */}
       <div className="glass-panel p-6 border-cyan-500/20 bg-gradient-to-r from-[#0b1226] to-[#080d1a]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center space-x-2 mb-1">
               <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded flex items-center space-x-1">
                 <Bot className="w-3 h-3 text-cyan-400" />
-                <span>GEMINI MULTIMODAL AI & TRUST REGISTRY</span>
+                <span>LIVE CAMERA SCANNER + GEMINI VISION</span>
               </span>
               <span className="text-xs text-slate-400 font-mono">
-                Physical Standee Tampering Shield
+                Real-Time Physical Sticker Swap Shield
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-heading font-extrabold text-white tracking-tight">
               QR Guardian & Counter Authentication
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 max-w-2xl mt-1">
-              Protects retail consumers from physical sticker-overlay scams. Compares the scanned UPI recipient VPA against the enrolled merchant's verified store identity, POS signatures, and Gemini Vision physical standee inspection.
+              Live-access camera scanner powered by <strong className="text-white">Gemini Multimodal AI</strong>. Scans printed counter QR standees in real time, compares the visual store branding against the digital payee VPA, and immediately flags physical sticker-overlay fraud.
             </p>
           </div>
 
@@ -185,7 +320,7 @@ export default function QRGuardianPage({ prefilledData }) {
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">
-                Uses Gemini to visually detect physical sticker overlays, misaligned paper borders, and signage brand mismatch.
+                Configure your Gemini API key in <code className="text-cyan-300">backend/config.py</code>, <code className="text-cyan-300">.env</code>, or enter it directly below.
               </p>
             </div>
           </div>
@@ -196,7 +331,7 @@ export default function QRGuardianPage({ prefilledData }) {
                 type={showApiKey ? "text" : "password"}
                 value={geminiApiKey}
                 onChange={(e) => handleSaveApiKey(e.target.value)}
-                placeholder="Enter Gemini API Key (or set in .env)"
+                placeholder="Enter Gemini API Key"
                 className="w-full pl-3 pr-8 py-1.5 rounded-lg bg-black/60 border border-white/[0.1] focus:border-cyan-400 text-white font-mono text-xs focus:outline-none"
               />
               <button
@@ -222,126 +357,235 @@ export default function QRGuardianPage({ prefilledData }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Input (7 Cols) */}
-        <form onSubmit={handleVerify} className="lg:col-span-7 glass-panel p-5 space-y-4">
+        {/* Left Input & Live Camera Scanner (7 Cols) */}
+        <div className="lg:col-span-7 glass-panel p-5 space-y-4">
           <div className="pb-3 border-b border-white/[0.08] flex items-center justify-between">
             <h2 className="text-sm font-heading font-bold text-white flex items-center space-x-2">
               <QrCode className="w-4 h-4 text-cyan-400" />
-              <span>QR Code Payload & Counter Context</span>
+              <span>Live Camera Scanner & QR Payload</span>
             </h2>
-            <span className="text-[10px] font-mono text-slate-400">NPCI QR Specification</span>
+
+            {/* Input Mode Tabs */}
+            <div className="flex items-center space-x-1 bg-black/40 p-1 rounded-xl border border-white/[0.07]">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveInputMode("camera");
+                  startCamera();
+                }}
+                className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  activeInputMode === "camera"
+                    ? "bg-cyan-500 text-black font-bold shadow-cyan-glow"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <Camera className="w-3.5 h-3.5" />
+                <span>Live Camera</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  stopCamera();
+                  setActiveInputMode("upload");
+                  fileInputRef.current?.click();
+                }}
+                className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  activeInputMode === "upload"
+                    ? "bg-cyan-500 text-black font-bold shadow-cyan-glow"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Upload Image</span>
+              </button>
+            </div>
           </div>
 
-          {/* Image Upload Area with Preview */}
-          <div
-            onClick={() => fileInputRef.current.click()}
-            className="p-5 rounded-2xl border-2 border-dashed border-white/[0.15] hover:border-cyan-400/50 bg-black/20 hover:bg-cyan-500/5 transition-all text-center cursor-pointer space-y-2 group relative overflow-hidden"
-          >
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept="image/*"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-
-            {imagePreview ? (
-              <div className="flex items-center justify-center space-x-4">
-                <img
-                  src={imagePreview}
-                  alt="Scanned standee"
-                  className="w-20 h-20 object-contain rounded-lg border border-cyan-500/40 bg-black/50"
+          {/* Live Camera Scanner Viewport */}
+          {activeInputMode === "camera" && (
+            <div className="space-y-3">
+              <div className="relative w-full h-64 sm:h-80 bg-black rounded-2xl overflow-hidden border border-cyan-500/30 flex items-center justify-center">
+                <video
+                  ref={videoRef}
+                  className="w-full h-full object-cover"
+                  playsInline
+                  muted
                 />
-                <div className="text-left">
-                  <span className="text-xs font-semibold text-cyan-300 flex items-center space-x-1">
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    <span>Standee Image Loaded</span>
-                  </span>
-                  <p className="text-[11px] text-slate-400">
-                    Click to replace with another photo or scan
-                  </p>
-                </div>
+                <canvas ref={canvasRef} className="hidden" />
+
+                {/* Targeting Reticle & Cyber Scanline Animation */}
+                {isScanning && (
+                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                    {/* Bounding Scanner Box */}
+                    <div className="w-48 h-48 sm:w-56 sm:h-56 border-2 border-cyan-400/80 rounded-2xl relative shadow-[0_0_20px_rgba(0,242,254,0.35)]">
+                      {/* Corner Target Markers */}
+                      <span className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-cyan-300" />
+                      <span className="absolute -top-1 -right-1 w-4 h-4 border-t-2 border-r-2 border-cyan-300" />
+                      <span className="absolute -bottom-1 -left-1 w-4 h-4 border-b-2 border-l-2 border-cyan-300" />
+                      <span className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-cyan-300" />
+
+                      {/* Sweeping Radar Scanline */}
+                      <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-pulse absolute top-1/2 -translate-y-1/2" />
+                    </div>
+
+                    <div className="absolute bottom-3 px-3 py-1 bg-black/70 backdrop-blur-md rounded-full border border-cyan-500/30 text-[11px] font-mono text-cyan-300 flex items-center space-x-2">
+                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                      <span>Aim camera at retail QR standee</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Overlay if not active or error */}
+                {!isScanning && (
+                  <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center space-y-3">
+                    {cameraError ? (
+                      <div className="space-y-2 text-rose-300 max-w-sm">
+                        <AlertTriangle className="w-8 h-8 text-rose-400 mx-auto" />
+                        <p className="text-xs font-mono">{cameraError}</p>
+                      </div>
+                    ) : imagePreview ? (
+                      <div className="space-y-2">
+                        <img
+                          src={imagePreview}
+                          alt="Captured Standee"
+                          className="w-28 h-28 object-contain rounded-xl border border-cyan-400 mx-auto bg-black/60 shadow-cyan-glow"
+                        />
+                        <span className="text-xs font-heading font-bold text-cyan-300 block">
+                          Captured Frame Ready for Gemini Inspection
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 text-slate-300">
+                        <Camera className="w-8 h-8 text-cyan-400 mx-auto" />
+                        <span className="text-sm font-heading font-bold text-white block">
+                          Camera Standby
+                        </span>
+                        <p className="text-xs text-slate-400 max-w-xs">
+                          Click below to start live video stream and scan any physical UPI QR code.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            ) : (
-              <>
-                <div className="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
-                  <Upload className="w-5 h-5" />
+
+              {/* Camera Action Buttons */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  {!isScanning ? (
+                    <button
+                      type="button"
+                      onClick={startCamera}
+                      className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold transition-all shadow-cyan-glow"
+                    >
+                      <Camera className="w-4 h-4" />
+                      <span>Start Live Camera Scan</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={stopCamera}
+                      className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 text-xs font-bold transition-all"
+                    >
+                      <CameraOff className="w-4 h-4" />
+                      <span>Stop Camera</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={toggleFacingMode}
+                    className="flex items-center space-x-1 px-3 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-slate-300 border border-white/[0.08] text-xs font-mono"
+                    title="Switch Camera (Front/Back)"
+                  >
+                    <SwitchCamera className="w-3.5 h-3.5" />
+                    <span>{facingMode === "environment" ? "Back" : "Front"}</span>
+                  </button>
                 </div>
-                <div>
-                  <span className="text-xs font-semibold text-slate-200">
-                    Upload Standee or QR Code Photo
+
+                {imagePreview && (
+                  <span className="text-[11px] font-mono text-emerald-400 flex items-center space-x-1">
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    <span>Frame Snapshot Acquired</span>
                   </span>
-                  <p className="text-[11px] text-slate-400">
-                    Gemini Vision inspects physical sticker tampering while `jsQR` decodes the payload
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
+                )}
+              </div>
+            </div>
+          )}
 
-          {/* Scanned UPI QR String */}
-          <div>
-            <label className="text-xs font-mono text-slate-300 block mb-1">
-              Decoded UPI QR Content (Intent URI) *
-            </label>
-            <textarea
-              rows={3}
-              required
-              value={qrText}
-              onChange={(e) => setQrText(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white font-mono text-xs leading-relaxed focus:outline-none"
-              placeholder="upi://pay?pa=...&pn=...&mc=..."
-            />
-          </div>
+          {/* Hidden File Input for Upload Tab */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="image/*"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Visual Store Branding */}
+          {/* Decoded QR Content */}
+          <form onSubmit={handleManualSubmit} className="space-y-4 pt-2">
             <div>
               <label className="text-xs font-mono text-slate-300 block mb-1">
-                Visual Store Branding at Counter *
+                Decoded UPI QR Content (Intent URI) *
               </label>
-              <input
-                type="text"
-                value={claimedBrand}
-                onChange={(e) => setClaimedBrand(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white text-xs focus:outline-none"
-                placeholder="e.g. Tata Starbucks Pvt Ltd"
+              <textarea
+                rows={3}
+                required
+                value={qrText}
+                onChange={(e) => setQrText(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white font-mono text-xs leading-relaxed focus:outline-none"
+                placeholder="upi://pay?pa=...&pn=...&mc=..."
               />
             </div>
 
-            {/* POS Terminal Signature (Optional) */}
-            <div>
-              <label className="text-xs font-mono text-slate-300 block mb-1 flex items-center space-x-1">
-                <Key className="w-3 h-3 text-cyan-400" />
-                <span>Mock POS Terminal Signature</span>
-              </label>
-              <input
-                type="text"
-                value={posSignature}
-                onChange={(e) => setPosSignature(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white font-mono text-xs focus:outline-none"
-                placeholder="e.g. SIG_POS_AUTH_TATA_SBUX_..."
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-mono text-slate-300 block mb-1">
+                  Visual Store Branding at Counter *
+                </label>
+                <input
+                  type="text"
+                  value={claimedBrand}
+                  onChange={(e) => setClaimedBrand(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white text-xs focus:outline-none"
+                  placeholder="e.g. Tata Starbucks Pvt Ltd"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-mono text-slate-300 block mb-1 flex items-center space-x-1">
+                  <Key className="w-3 h-3 text-cyan-400" />
+                  <span>Mock POS Terminal Signature</span>
+                </label>
+                <input
+                  type="text"
+                  value={posSignature}
+                  onChange={(e) => setPosSignature(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-black/40 border border-white/[0.1] focus:border-cyan-400 text-white font-mono text-xs focus:outline-none"
+                  placeholder="e.g. SIG_POS_AUTH_TATA_SBUX_..."
+                />
+              </div>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-black font-heading font-bold text-sm shadow-cyan-glow transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
-          >
-            {loading ? (
-              <span>Running Gemini Vision & Merchant Registry Verification...</span>
-            ) : (
-              <>
-                <ShieldCheck className="w-4 h-4 text-black" />
-                <span>Verify QR Authenticity & Counter Match</span>
-              </>
-            )}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-black font-heading font-bold text-sm shadow-cyan-glow transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+            >
+              {loading ? (
+                <span>Running Gemini AI & Merchant Registry Verification...</span>
+              ) : (
+                <>
+                  <ShieldCheck className="w-4 h-4 text-black" />
+                  <span>Verify QR Authenticity & Counter Match</span>
+                </>
+              )}
+            </button>
+          </form>
+        </div>
 
-        {/* Right Output (5 Cols) */}
+        {/* Right Output: Verification & Accurate Gemini Analysis (5 Cols) */}
         <div className="lg:col-span-5 space-y-5">
           {result ? (
             <div className="glass-panel p-5 space-y-5 border-cyan-500/30 animate-in fade-in duration-300">
@@ -370,12 +614,12 @@ export default function QRGuardianPage({ prefilledData }) {
                     <span>PHYSICAL QR STICKER TAMPERING DETECTED</span>
                   </div>
                   <p className="text-xs text-rose-200/90 leading-relaxed">
-                    The printed signage at this counter displays <strong className="text-white">{claimedBrand}</strong>, but the scanned QR code directs payment to an unrelated mule VPA. Do not scan or pay.
+                    The counter displays <strong className="text-white">{claimedBrand}</strong>, but the scanned QR code directs payment to an unrelated mule VPA. Do not authorize this payment.
                   </p>
                 </div>
               )}
 
-              {/* Gemini AI Multimodal Analysis Card (If returned) */}
+              {/* Accurate Gemini Multimodal Analysis Card */}
               {gemini && !gemini.error && (
                 <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-950/30 to-purple-950/20 border border-cyan-500/40 space-y-2.5">
                   <div className="flex items-center justify-between">
@@ -396,6 +640,10 @@ export default function QRGuardianPage({ prefilledData }) {
                     <div className="flex justify-between">
                       <span className="text-slate-400">Visual Brand Detected:</span>
                       <span className="text-white font-bold">{gemini.visual_brand_detected}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">VPA Account Type:</span>
+                      <span className="text-cyan-300">{gemini.vpa_account_type || "Analyzed"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Cross-Modal Invariance:</span>
@@ -499,10 +747,10 @@ export default function QRGuardianPage({ prefilledData }) {
                 <QrCode className="w-8 h-8 animate-pulse" />
               </div>
               <h3 className="text-base font-heading font-bold text-white">
-                Awaiting QR Input
+                Live Scanner Standby
               </h3>
               <p className="text-xs text-slate-400 max-w-sm">
-                Upload a counter standee photo or select a scenario above to test physical sticker-swap detection with Gemini Vision multimodal analysis.
+                Point your camera at any UPI QR code or counter standee to evaluate physical sticker tampering and NPCI merchant identity verification.
               </p>
             </div>
           )}
