@@ -20,6 +20,7 @@ export const NAVIGATION_ITEMS = [
   { id: "message-intel", label: "Message Intelligence", icon: "MessageSquareWarning" },
   { id: "link-scanner", label: "Payment Link Scanner", icon: "Link2" },
   { id: "qr-guardian", label: "QR Guardian", icon: "QrCode" },
+  { id: "ghostpay-detector", label: "GhostPay Detector", icon: "Receipt", badge: "New" },
   { id: "fraud-evolution", label: "Fraud Evolution Lab", icon: "Cpu" },
   { id: "data-science-studio", label: "Data Science Studio", icon: "BarChart3" },
   { id: "audit-history", label: "Audit History", icon: "FileText" },
@@ -111,6 +112,20 @@ export const DEMO_PRESETS = [
     page: "link-scanner",
     payload: {
       link: "https://onlinesbi-pan-kyc-verify.top/portal/update-card"
+    }
+  },
+  {
+    id: "preset-paytm-spoof-global",
+    title: "Fake Paytm Spoof App Screenshot Scam",
+    tag: "GhostPay Detector",
+    description: "Customer presents simulated payment confirmation claiming ₹1,200 payment, but shopkeeper expected ₹1,800 to Chai Point.",
+    category: "Fake Payment Screenshot",
+    page: "ghostpay-detector",
+    payload: {
+      expected_amount: 1800.0,
+      expected_recipient_name: "Chai Point Mountain Trail",
+      expected_vpa: "chaipoint@yesbank",
+      expected_utr: "428900112233"
     }
   }
 ];

@@ -12,6 +12,7 @@ import {
   FileText,
   Sliders,
   ShieldCheck,
+  Receipt,
   X
 } from "lucide-react";
 import { NAVIGATION_ITEMS } from "../utils/constants";
@@ -24,6 +25,7 @@ const ICON_MAP = {
   MessageSquareWarning,
   Link2,
   QrCode,
+  Receipt,
   Cpu,
   BarChart3,
   FileText,
@@ -116,6 +118,9 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
             } else if (item.id === "ai-payment-contract") {
               badgeText = "New";
               badgeStyle = "bg-blue-50 text-blue-700 border border-blue-200 font-semibold";
+            } else if (item.id === "ghostpay-detector") {
+              badgeText = "Verify";
+              badgeStyle = "bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold";
             }
 
             return (

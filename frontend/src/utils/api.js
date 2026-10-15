@@ -176,5 +176,36 @@ export const api = {
   // Retrain
   retrainModels: async () => {
     return await request("/api/admin/retrain", { method: "POST" });
+  },
+
+  // GhostPay: Status
+  getGhostPayStatus: async () => {
+    return await request("/api/ghostpay/status");
+  },
+
+  // GhostPay: Presets
+  getGhostPayPresets: async () => {
+    return await request("/api/ghostpay/presets");
+  },
+
+  // GhostPay: Analyze JSON
+  analyzeGhostPay: async (payload) => {
+    return await request("/api/ghostpay/analyze", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  // GhostPay: Upload File
+  uploadGhostPayScreenshot: async (formData) => {
+    const url = "http://localhost:8000/api/ghostpay/upload";
+    const res = await fetch(url, {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) {
+      throw new Error(`Upload Error: ${res.status} ${res.statusText}`);
+    }
+    return await res.json();
   }
 };

@@ -76,9 +76,9 @@ export default function AuditDetailModal({ isOpen, onClose, record, onOpenCompla
                     className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-mono flex items-center justify-between"
                   >
                     <span className="text-slate-700">
-                      {flag.check || flag.title || flag.feature || flag.type || flag.signal || JSON.stringify(flag)}
+                      {flag.detail || flag.check || flag.title || flag.feature || flag.type || flag.signal || JSON.stringify(flag)}
                     </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-medium">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-medium shrink-0 ml-2">
                       {flag.status || flag.impact || flag.severity || "FLAGGED"}
                     </span>
                   </div>

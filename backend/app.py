@@ -8,7 +8,8 @@ Branding: PaySentriX — "Every Payment has a story, We find the Truth"
 import os
 import sys
 import subprocess
-from fastapi import FastAPI, HTTPException, Query, BackgroundTasks
+import base64
+from fastapi import FastAPI, HTTPException, Query, BackgroundTasks, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Dict, Any, List, Optional
@@ -19,7 +20,7 @@ ROOT_DIR = os.path.dirname(BASE_DIR)
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-from backend.data.database import get_connection, init_db, seed_merchants
+from backend.data.database import get_connection, init_db, seed_merchants, record_ghostpay_evidence
 from backend.services.contract_service import contract_engine, PaymentPromise, PaymentExecution
 from backend.services.transaction_service import transaction_service
 from backend.services.nlp_service import nlp_service
@@ -29,6 +30,8 @@ from backend.services.anomaly_service import anomaly_service
 from backend.services.evolution_service import evolution_service
 from backend.services.audit_service import audit_service
 from backend.services.studio_service import studio_service
+from backend.services.ghostpay_service import ghostpay_service
+from backend.services.ghostpay_presets import get_ghostpay_presets
 
 app = FastAPI(
     title="PaySentriX Security Core API",
@@ -98,6 +101,17 @@ class QRVerifyRequest(BaseModel):
     image_base64: Optional[str] = None
     gemini_api_key: Optional[str] = None
 
+class GhostPayAnalyzeRequest(BaseModel):
+    image_base64: Optional[str] = None
+    expected_amount: Optional[float] = None
+    expected_recipient_name: Optional[str] = None
+    expected_vpa: Optional[str] = None
+    approx_payment_time: Optional[str] = None
+    expected_utr: Optional[str] = None
+    merchant_confirmed_credit: bool = False
+    gemini_api_key: Optional[str] = None
+    preset_scenario_id: Optional[str] = None
+
 class EvolutionRequest(BaseModel):
     scenario_name: str
     message_text: str
@@ -127,6 +141,7 @@ def get_health():
             "multilingual_nlp_engine": "ONLINE (LinearSVC + TF-IDF, English/Hindi/Hinglish)",
             "ai_payment_contract_engine": "ONLINE (Direction Invariance & Predicate Logic)",
             "qr_guardian": "ONLINE (NPCI Payload & Merchant Registry)",
+            "ghostpay_detector": "ONLINE (Screenshot Forensics & Independent Verification Engine)",
             "ssrf_link_inspector": "ONLINE (RFC1918 Guard Active)"
         },
         "dataset_size": metrics.get("dataset_size", 15000),
@@ -328,7 +343,111 @@ def verify_qr(req: QRVerifyRequest):
     res["audit_id"] = record_id
     return res
 
-# 9. Fraud Evolution Lab: Multi-Engine Testbed
+# 9. GhostPay Detector: Analyze Payment Confirmation Evidence
+@app.post("/api/ghostpay/analyze")
+def analyze_ghostpay_evidence(req: GhostPayAnalyzeRequest):
+    res = ghostpay_service.analyze_evidence(
+        image_base64=req.image_base64,
+        expected_amount=req.expected_amount,
+        expected_recipient_name=req.expected_recipient_name,
+        expected_vpa=req.expected_vpa,
+        approx_payment_time=req.approx_payment_time,
+        expected_utr=req.expected_utr,
+        merchant_confirmed_credit=req.merchant_confirmed_credit,
+        gemini_api_key=req.gemini_api_key,
+        preset_scenario_id=req.preset_scenario_id
+    )
+
+    extracted_amt = res["extracted_details"]["amount"] or req.expected_amount or 0
+    extracted_rec = res["extracted_details"]["recipient_name"] or req.expected_recipient_name or "Unknown"
+    summary = f"Claimed ₹{extracted_amt:,.2f} to {extracted_rec} | {res['overall_assessment']}"
+
+    record_id = audit_service.record_analysis(
+        analysis_type="GHOSTPAY",
+        input_summary=summary[:150],
+        full_payload=res,
+        risk_score=res["risk_score"],
+        risk_tier=res["risk_tier"],
+        prediction=res["prediction"],
+        category="Fake Payment Screenshot" if res["overall_assessment"] == "SUSPICIOUS_REVIEW_REQUIRED" else "GhostPay Evidence Forensics",
+        contract_verdict="FAIL" if res["overall_assessment"] == "SUSPICIOUS_REVIEW_REQUIRED" else ("PASS" if res["overall_assessment"] == "VERIFIED_BY_TRUSTED_SOURCE" else "UNKNOWN"),
+        explanation=res["explanation"],
+        evidence_flags=res["evidence_flags"]
+    )
+
+    # Record evidence fingerprint for duplicate detection
+    dup_data = res.get("duplicate_evidence", {})
+    record_ghostpay_evidence(
+        record_id=record_id,
+        image_sha256=dup_data.get("sha256", "NONE"),
+        image_dhash=dup_data.get("dhash", "NONE"),
+        utr_number=res["extracted_details"].get("utr_number") or req.expected_utr,
+        amount=res["extracted_details"].get("amount") or req.expected_amount,
+        recipient_vpa=res["extracted_details"].get("recipient_vpa") or req.expected_vpa,
+        assessment=res["overall_assessment"]
+    )
+
+    res["audit_id"] = record_id
+    return res
+
+# 10. GhostPay Detector: Upload Screenshot File
+@app.post("/api/ghostpay/upload")
+async def upload_ghostpay_screenshot(
+    file: UploadFile = File(...),
+    expected_amount: Optional[float] = Form(None),
+    expected_recipient_name: Optional[str] = Form(None),
+    expected_vpa: Optional[str] = Form(None),
+    approx_payment_time: Optional[str] = Form(None),
+    expected_utr: Optional[str] = Form(None),
+    merchant_confirmed_credit: bool = Form(False),
+    gemini_api_key: Optional[str] = Form(None)
+):
+    if file.content_type not in ["image/jpeg", "image/png", "image/webp", "image/jpg"]:
+        raise HTTPException(status_code=400, detail="Invalid image format. Supported formats: JPG, PNG, WEBP.")
+
+    contents = await file.read()
+    if len(contents) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="File size exceeds maximum limit of 10MB.")
+
+    b64_data = f"data:{file.content_type};base64,{base64.b64encode(contents).decode()}"
+
+    req = GhostPayAnalyzeRequest(
+        image_base64=b64_data,
+        expected_amount=expected_amount,
+        expected_recipient_name=expected_recipient_name,
+        expected_vpa=expected_vpa,
+        approx_payment_time=approx_payment_time,
+        expected_utr=expected_utr,
+        merchant_confirmed_credit=merchant_confirmed_credit,
+        gemini_api_key=gemini_api_key
+    )
+    return analyze_ghostpay_evidence(req)
+
+# 11. GhostPay Detector: Presets
+@app.get("/api/ghostpay/presets")
+def get_ghostpay_preset_scenarios():
+    return get_ghostpay_presets()
+
+# 12. GhostPay Detector: Status
+@app.get("/api/ghostpay/status")
+def get_ghostpay_engine_status():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM ghostpay_evidence_registry")
+    registry_count = cursor.fetchone()[0]
+    conn.close()
+
+    return {
+        "status": "ONLINE",
+        "service": "GhostPay Payment Evidence Forensics",
+        "tagline": "A payment screenshot is a claim. Verify the transaction.",
+        "evidence_registry_size": registry_count,
+        "ocr_engine": "Gemini 2.5 Flash Multimodal Vision + Offline Heuristic Fallback",
+        "duplicate_detector": "SHA-256 + 64-bit Perceptual dHash",
+        "provider_adapter": "UnconnectedBankGatewayAdapter (Direct Settlement Verification Unavailable)"
+    }
+
+# 13. Fraud Evolution Lab: Multi-Engine Testbed
 @app.post("/api/evolution/evaluate")
 def evaluate_evolution_scenario(req: EvolutionRequest):
     res = evolution_service.evaluate_evolution_scenario(
