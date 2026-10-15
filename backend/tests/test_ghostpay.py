@@ -120,6 +120,42 @@ class TestGhostPayDetector(unittest.TestCase):
         self.assertTrue(data2["duplicate_evidence"]["is_exact_image_duplicate"])
         self.assertEqual(data2["overall_assessment"], "SUSPICIOUS_REVIEW_REQUIRED")
 
+    def test_raw_image_readable_extraction_avoids_false_insufficient_evidence(self):
+        """A clearly readable raw screenshot must extract payment fields and NOT yield INSUFFICIENT_EVIDENCE."""
+        presets = get_ghostpay_presets()
+        phonepe_sample = presets[2] # PhonePe ₹350 receipt
+        b64 = phonepe_sample["image_base64"]
+
+        res = ghostpay_service.analyze_evidence(
+            image_base64=b64,
+            expected_amount=350.0,
+            expected_recipient_name="Chai Point Mountain Trail",
+            expected_vpa="chaipoint@yesbank"
+        )
+        self.assertEqual(res["overall_assessment"], "NOT_VERIFIED")
+        self.assertEqual(res["risk_tier"], "MEDIUM")
+        self.assertEqual(res["extracted_details"]["amount"], 350.0)
+        self.assertEqual(res["extracted_details"]["utr_number"], "430198274192")
+        self.assertEqual(res["extracted_details"]["readability_status"], "READABLE")
+        self.assertIn("amount", res["extracted_details"]["field_confidences"])
+        self.assertIn("utr_number", res["extracted_details"]["field_confidences"])
+        self.assertIn("Screenshot evidence is readable", res["explanation"])
+
+    def test_partial_receipt_avoids_insufficient_evidence(self):
+        """Absence of UTR or recipient alone must not cause the entire image to be classified as unreadable."""
+        # Simulated line items where UTR is missing
+        lines = [
+            {"confidence": 1.0, "text": "Google Pay"},
+            {"confidence": 1.0, "text": "Paid to Cafe Coffee Day"},
+            {"confidence": 1.0, "text": "₹ 250.00"},
+            {"confidence": 0.8, "text": "ccd@icici"}
+        ]
+        parsed = ghostpay_service._parse_receipt_text_lines(lines, None, lap_var=1200.0)
+        self.assertEqual(parsed["readability_status"], "READABLE")
+        self.assertEqual(parsed["amount"], 250.0)
+        self.assertIsNone(parsed["utr_number"])
+
 
 if __name__ == "__main__":
     unittest.main()
+

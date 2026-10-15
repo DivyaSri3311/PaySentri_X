@@ -32,6 +32,8 @@ from backend.services.audit_service import audit_service
 from backend.services.studio_service import studio_service
 from backend.services.ghostpay_service import ghostpay_service
 from backend.services.ghostpay_presets import get_ghostpay_presets
+from backend.services.speech_service import GhostPaySpeechService
+from backend.services.ghostpay_agent_service import ghostpay_agent
 
 app = FastAPI(
     title="PaySentriX Security Core API",
@@ -110,7 +112,22 @@ class GhostPayAnalyzeRequest(BaseModel):
     expected_utr: Optional[str] = None
     merchant_confirmed_credit: bool = False
     gemini_api_key: Optional[str] = None
+    openai_api_key: Optional[str] = None
     preset_scenario_id: Optional[str] = None
+
+class GhostPayAgentInvestigationRequest(BaseModel):
+    query: str = Field(..., description="Natural language voice transcript or typed investigation request")
+    image_base64: Optional[str] = Field(None, description="Active payment screenshot base64")
+    expected_amount: Optional[float] = None
+    expected_recipient_name: Optional[str] = None
+    expected_vpa: Optional[str] = None
+    expected_utr: Optional[str] = None
+    approx_payment_time: Optional[str] = None
+    merchant_confirmed_credit: bool = False
+    preset_scenario_id: Optional[str] = None
+    conversation_history: Optional[List[Dict[str, str]]] = None
+    openai_api_key: Optional[str] = None
+    current_analysis: Optional[Dict[str, Any]] = None
 
 class EvolutionRequest(BaseModel):
     scenario_name: str
@@ -142,6 +159,8 @@ def get_health():
             "ai_payment_contract_engine": "ONLINE (Direction Invariance & Predicate Logic)",
             "qr_guardian": "ONLINE (NPCI Payload & Merchant Registry)",
             "ghostpay_detector": "ONLINE (Screenshot Forensics & Independent Verification Engine)",
+            "ghostpay_voice_stt": "ONLINE (Whisper Neural Speech Recognition Engine)",
+            "ghostpay_ai_agent": "ONLINE (OpenAI LLM & Autonomous Investigation Agent)",
             "ssrf_link_inspector": "ONLINE (RFC1918 Guard Active)"
         },
         "dataset_size": metrics.get("dataset_size", 15000),
@@ -355,6 +374,7 @@ def analyze_ghostpay_evidence(req: GhostPayAnalyzeRequest):
         expected_utr=req.expected_utr,
         merchant_confirmed_credit=req.merchant_confirmed_credit,
         gemini_api_key=req.gemini_api_key,
+        openai_api_key=req.openai_api_key,
         preset_scenario_id=req.preset_scenario_id
     )
 
@@ -400,7 +420,8 @@ async def upload_ghostpay_screenshot(
     approx_payment_time: Optional[str] = Form(None),
     expected_utr: Optional[str] = Form(None),
     merchant_confirmed_credit: bool = Form(False),
-    gemini_api_key: Optional[str] = Form(None)
+    gemini_api_key: Optional[str] = Form(None),
+    openai_api_key: Optional[str] = Form(None)
 ):
     if file.content_type not in ["image/jpeg", "image/png", "image/webp", "image/jpg"]:
         raise HTTPException(status_code=400, detail="Invalid image format. Supported formats: JPG, PNG, WEBP.")
@@ -419,7 +440,8 @@ async def upload_ghostpay_screenshot(
         approx_payment_time=approx_payment_time,
         expected_utr=expected_utr,
         merchant_confirmed_credit=merchant_confirmed_credit,
-        gemini_api_key=gemini_api_key
+        gemini_api_key=gemini_api_key,
+        openai_api_key=openai_api_key
     )
     return analyze_ghostpay_evidence(req)
 
@@ -444,8 +466,46 @@ def get_ghostpay_engine_status():
         "evidence_registry_size": registry_count,
         "ocr_engine": "Gemini 2.5 Flash Multimodal Vision + Offline Heuristic Fallback",
         "duplicate_detector": "SHA-256 + 64-bit Perceptual dHash",
-        "provider_adapter": "UnconnectedBankGatewayAdapter (Direct Settlement Verification Unavailable)"
+        "provider_adapter": "UnconnectedBankGatewayAdapter (Direct Settlement Verification Unavailable)",
+        "speech_engine": "Whisper Neural Speech-to-Text (faster-whisper)"
     }
+
+# 13. GhostPay Detector: Speech Recognition Model (OpenAI Whisper & Neural STT)
+@app.post("/api/ghostpay/transcribe")
+async def transcribe_ghostpay_voice(
+    file: UploadFile = File(...),
+    openai_api_key: Optional[str] = Form(None)
+):
+    contents = await file.read()
+    if not contents:
+        raise HTTPException(status_code=400, detail="Empty audio recording received.")
+    speech_svc = GhostPaySpeechService.get_instance()
+    res = speech_svc.transcribe_audio_bytes(
+        contents,
+        filename=file.filename or "audio.webm",
+        openai_api_key=openai_api_key
+    )
+    if res.get("status") == "ERROR":
+        raise HTTPException(status_code=500, detail=res.get("error", "Transcription failed"))
+    return res
+
+# 14. GhostPay Detector: AI Payment Investigation Agent (OpenAI LLM + Tool Calling)
+@app.post("/api/ghostpay/agent/investigate")
+def investigate_payment_with_agent(req: GhostPayAgentInvestigationRequest):
+    return ghostpay_agent.investigate(
+        query=req.query,
+        image_base64=req.image_base64,
+        expected_amount=req.expected_amount,
+        expected_recipient_name=req.expected_recipient_name,
+        expected_vpa=req.expected_vpa,
+        expected_utr=req.expected_utr,
+        approx_payment_time=req.approx_payment_time,
+        merchant_confirmed_credit=req.merchant_confirmed_credit,
+        preset_scenario_id=req.preset_scenario_id,
+        conversation_history=req.conversation_history,
+        openai_api_key=req.openai_api_key,
+        current_analysis=req.current_analysis
+    )
 
 # 13. Fraud Evolution Lab: Multi-Engine Testbed
 @app.post("/api/evolution/evaluate")
