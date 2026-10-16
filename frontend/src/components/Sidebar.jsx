@@ -79,20 +79,24 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
               setActivePage("command-core");
               setIsMobileOpen(false);
             }}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
               activePage === "command-core" || activePage === "dashboard"
-                ? "bg-blue-50 text-blue-600 font-semibold"
-                : "text-slate-700 hover:text-slate-900 hover:bg-slate-50"
+                ? "bg-slate-100/90 text-slate-900 font-semibold shadow-2xs"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50/80"
             }`}
           >
             <div className="flex items-center space-x-3">
-              <LayoutDashboard className="w-4 h-4 text-slate-500" />
+              <LayoutDashboard className={`w-4 h-4 transition-colors ${
+                activePage === "command-core" || activePage === "dashboard"
+                  ? "text-blue-600"
+                  : "text-slate-400"
+              }`} />
               <span>Dashboard</span>
             </div>
           </button>
 
           {/* Section Header */}
-          <div className="px-3 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          <div className="px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
             DETECTION SUITE
           </div>
 
@@ -106,13 +110,13 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
 
             if (item.id === "command-core") {
               badgeText = "Live";
-              badgeStyle = "bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold";
+              badgeStyle = "bg-emerald-50 text-emerald-700 border border-emerald-200/70 font-semibold";
             } else if (item.id === "ai-payment-contract") {
               badgeText = "New";
-              badgeStyle = "bg-blue-50 text-blue-700 border border-blue-200 font-semibold";
+              badgeStyle = "bg-blue-50 text-blue-700 border border-blue-200/70 font-semibold";
             } else if (item.id === "ghostpay-detector") {
               badgeText = "Verify";
-              badgeStyle = "bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold";
+              badgeStyle = "bg-indigo-50 text-indigo-700 border border-indigo-200/70 font-semibold";
             }
 
             return (
@@ -122,10 +126,10 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
                   setActivePage(item.id);
                   setIsMobileOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group ${
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all group ${
                   isActive
-                    ? "bg-blue-50 text-blue-600 font-semibold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                    ? "bg-slate-100/90 text-slate-900 font-semibold shadow-2xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50/80"
                 }`}
               >
                 <div className="flex items-center space-x-3 truncate">
@@ -133,7 +137,7 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
                     className={`w-4 h-4 shrink-0 transition-colors ${
                       isActive
                         ? "text-blue-600"
-                        : "text-slate-500 group-hover:text-slate-700"
+                        : "text-slate-400 group-hover:text-slate-600"
                     }`}
                   />
                   <span className="truncate">{item.label}</span>

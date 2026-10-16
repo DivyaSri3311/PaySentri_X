@@ -98,7 +98,7 @@ export default function TopNav({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search features, scan history, or documentation..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
+            className="w-full pl-9 pr-4 py-2 bg-slate-50/80 hover:bg-slate-100/60 focus:bg-white border border-slate-200/80 focus:border-blue-500 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none transition-all shadow-2xs"
           />
 
           {/* Quick Search Results Dropdown */}
@@ -108,7 +108,7 @@ export default function TopNav({
                 className="fixed inset-0 z-40"
                 onClick={() => setSearchQuery("")}
               />
-              <div className="absolute left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg p-2 z-50 max-h-80 overflow-y-auto">
+              <div className="absolute left-0 right-0 mt-1.5 bg-white border border-slate-200/90 rounded-2xl shadow-xl p-2 z-50 max-h-80 overflow-y-auto">
                 {filteredNav.length > 0 && (
                   <div className="mb-2">
                     <div className="text-[10px] font-bold text-slate-400 uppercase px-2 py-1">
@@ -121,7 +121,7 @@ export default function TopNav({
                           setActivePage(n.id);
                           setSearchQuery("");
                         }}
-                        className="w-full text-left px-2.5 py-1.5 text-xs text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg flex items-center justify-between"
+                        className="w-full text-left px-2.5 py-1.5 text-xs text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl flex items-center justify-between transition-colors"
                       >
                         <span>{n.label}</span>
                         <span className="text-[10px] text-slate-400 font-mono">Jump</span>
@@ -142,7 +142,7 @@ export default function TopNav({
                           onSelectPreset(p);
                           setSearchQuery("");
                         }}
-                        className="w-full text-left px-2.5 py-1.5 text-xs text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg"
+                        className="w-full text-left px-2.5 py-1.5 text-xs text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-colors"
                       >
                         <div className="font-medium">{p.title}</div>
                         <div className="text-[10px] text-slate-400 line-clamp-1">{p.description}</div>
@@ -168,7 +168,7 @@ export default function TopNav({
         <div className="relative">
           <button
             onClick={() => setShowPresets(!showPresets)}
-            className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium transition-colors"
+            className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-all shadow-2xs hover:shadow-xs"
           >
             <Sparkles className="w-3.5 h-3.5 text-blue-600" />
             <span>Demo Scenarios</span>
