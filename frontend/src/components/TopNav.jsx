@@ -20,6 +20,7 @@ export default function TopNav({
   setIsMobileOpen,
   backendOnline,
   onSelectPreset,
+  currentTheme: propTheme
 }) {
   const [showPresets, setShowPresets] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -34,10 +35,19 @@ export default function TopNav({
   });
 
   useEffect(() => {
+    if (propTheme && propTheme !== currentTheme) {
+      setCurrentTheme(propTheme);
+    }
+  }, [propTheme]);
+
+  useEffect(() => {
     const handleThemeChange = () => {
       try {
         const stored = localStorage.getItem("paysentrix_scam_checker_theme");
-        if (stored) setCurrentTheme(stored);
+        if (stored) {
+          setCurrentTheme(stored);
+          document.documentElement.classList.toggle("dark", stored === "dark");
+        }
       } catch {}
     };
     window.addEventListener("paysentrix_scam_checker_theme_changed", handleThemeChange);
@@ -49,8 +59,11 @@ export default function TopNav({
     setCurrentTheme(nextTheme);
     try {
       localStorage.setItem("paysentrix_scam_checker_theme", nextTheme);
+      document.documentElement.classList.toggle("dark", nextTheme === "dark");
       window.dispatchEvent(new Event("paysentrix_scam_checker_theme_changed"));
-    } catch {}
+    } catch (e) {
+      console.warn("Theme toggle error:", e);
+    }
   };
 
   const recentNotifications = [
@@ -75,7 +88,7 @@ export default function TopNav({
     : [];
 
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-slate-200 px-4 lg:px-8 py-3 flex items-center justify-between">
+    <header className={`sticky top-0 z-30 ${currentTheme === "dark" ? "bg-[#0b1120] border-slate-800 text-slate-100" : "bg-white border-slate-200 text-slate-800"} border-b px-4 lg:px-8 py-3 flex items-center justify-between transition-colors duration-200`}>
       {/* Left: Mobile Toggle & Search Bar */}
       <div className="flex items-center space-x-3 flex-1 max-w-xl">
         <button
@@ -87,7 +100,7 @@ export default function TopNav({
         </button>
 
         <div className="lg:hidden flex items-center cursor-pointer" onClick={() => setActivePage("command-core")}>
-          <PaySentriXLogo variant="icon" size="sm" theme="light" />
+          <PaySentriXLogo variant="icon" size="sm" theme={currentTheme === "dark" ? "dark" : "light"} />
         </div>
 
         {/* Search Bar matching Screenshot 2 */}
@@ -98,7 +111,7 @@ export default function TopNav({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search features, scan history, or documentation..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50/80 hover:bg-slate-100/60 focus:bg-white border border-slate-200/80 focus:border-blue-500 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none transition-all shadow-2xs"
+            className={`w-full pl-9 pr-4 py-2 ${currentTheme === "dark" ? "bg-slate-900 border-slate-700 text-slate-100 placeholder-slate-500 focus:bg-[#0f172a]" : "bg-slate-50/80 hover:bg-slate-100/60 focus:bg-white border-slate-200/80 text-slate-800 placeholder-slate-400"} border focus:border-blue-500 rounded-xl text-xs focus:outline-none transition-all shadow-2xs`}
           />
 
           {/* Quick Search Results Dropdown */}
@@ -168,7 +181,11 @@ export default function TopNav({
         <div className="relative">
           <button
             onClick={() => setShowPresets(!showPresets)}
-            className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-all shadow-2xs hover:shadow-xs"
+            className={`hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border ${
+              currentTheme === "dark"
+                ? "border-slate-800 bg-[#0f172a] hover:bg-slate-800 text-slate-200"
+                : "border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700"
+            } text-xs font-semibold transition-all shadow-2xs hover:shadow-xs`}
           >
             <Sparkles className="w-3.5 h-3.5 text-blue-600" />
             <span>Demo Scenarios</span>
@@ -225,7 +242,9 @@ export default function TopNav({
           aria-label={`Switch to ${currentTheme === "light" ? "Dark" : "Light"} Mode`}
           onClick={toggleAppTheme}
           title={`Switch to ${currentTheme === "light" ? "Dark" : "Light"} Mode`}
-          className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+          className={`p-2 rounded-lg text-slate-500 hover:text-slate-800 ${
+            currentTheme === "dark" ? "hover:bg-slate-800 hover:text-slate-200" : "hover:bg-slate-100"
+          } transition-colors`}
         >
           {currentTheme === "dark" ? (
             <Moon className="w-4 h-4 text-cyan-500" />
@@ -238,7 +257,9 @@ export default function TopNav({
         <div className="relative">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+            className={`relative p-2 rounded-lg text-slate-500 hover:text-slate-800 ${
+              currentTheme === "dark" ? "hover:bg-slate-800 hover:text-slate-200" : "hover:bg-slate-100"
+            } transition-colors`}
           >
             <Bell className="w-4 h-4" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white" />

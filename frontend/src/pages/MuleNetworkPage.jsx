@@ -250,6 +250,8 @@ export default function MuleNetworkPage() {
         cyRef.current.destroy();
       }
 
+      const isDarkTheme = document.documentElement.classList.contains("dark");
+
       const cy = cytoscape({
         container: cyContainerRef.current,
         elements: res.elements,
@@ -259,7 +261,7 @@ export default function MuleNetworkPage() {
             style: {
               "background-color": "data(node_color)",
               label: "data(label)",
-              color: "#1e293b",
+              color: isDarkTheme ? "#f1f5f9" : "#1e293b",
               "font-size": "10px",
               "font-weight": 600,
               "text-valign": "bottom",
@@ -267,7 +269,7 @@ export default function MuleNetworkPage() {
               width: "data(node_size)",
               height: "data(node_size)",
               "border-width": 2,
-              "border-color": "#ffffff",
+              "border-color": isDarkTheme ? "#0f172a" : "#ffffff",
               "transition-property": "background-color, border-color, width, height",
               "transition-duration": "0.3s"
             }
@@ -302,8 +304,8 @@ export default function MuleNetworkPage() {
             selector: "edge",
             style: {
               width: 1.5,
-              "line-color": "#cbd5e1",
-              "target-arrow-color": "#94a3b8",
+              "line-color": isDarkTheme ? "#475569" : "#cbd5e1",
+              "target-arrow-color": isDarkTheme ? "#64748b" : "#94a3b8",
               "target-arrow-shape": "triangle",
               "curve-style": "bezier",
               "arrow-scale": 0.8,
@@ -379,6 +381,14 @@ export default function MuleNetworkPage() {
   useEffect(() => {
     loadGraphData();
   }, [riskFilter, selectedClusterId]);
+
+  useEffect(() => {
+    const handleTheme = () => {
+      loadGraphData();
+    };
+    window.addEventListener("paysentrix_scam_checker_theme_changed", handleTheme);
+    return () => window.removeEventListener("paysentrix_scam_checker_theme_changed", handleTheme);
+  }, []);
 
   // --- Graph Controls ---
   const handleFitScreen = () => {

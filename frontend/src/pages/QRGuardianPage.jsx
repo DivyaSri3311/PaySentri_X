@@ -117,6 +117,7 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
     setTheme(target);
     try {
       localStorage.setItem("paysentrix_scam_checker_theme", target);
+      document.documentElement.classList.toggle("dark", target === "dark");
       window.dispatchEvent(new Event("paysentrix_scam_checker_theme_changed"));
     } catch {}
   };
@@ -126,6 +127,7 @@ export default function QRGuardianPage({ prefilledData, setActivePage, onOpenCom
       const stored = localStorage.getItem("paysentrix_scam_checker_theme");
       if (stored && stored !== theme) {
         setTheme(stored);
+        document.documentElement.classList.toggle("dark", stored === "dark");
       }
     };
     window.addEventListener("paysentrix_scam_checker_theme_changed", onThemeChange);
