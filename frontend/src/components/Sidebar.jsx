@@ -15,6 +15,7 @@ import {
   Receipt,
   X
 } from "lucide-react";
+import PaySentriXLogo from "./PaySentriXLogo";
 import { NAVIGATION_ITEMS } from "../utils/constants";
 
 const ICON_MAP = {
@@ -53,23 +54,14 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
         }`}
       >
         {/* Brand Header */}
-        <div className="p-5 border-b border-slate-200 flex items-center justify-between">
-          <div
-            className="flex items-center space-x-3 cursor-pointer"
+        <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+          <PaySentriXLogo
+            variant="horizontal"
+            theme="light"
+            size="md"
             onClick={() => setActivePage("command-core")}
-          >
-            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-blue-600 text-white shadow-sm">
-              <ShieldCheck className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="font-heading text-lg font-bold tracking-tight text-slate-900 leading-none">
-                PaySentriX
-              </div>
-              <p className="text-[11px] text-slate-500 font-medium mt-1">
-                AI UPI Threat Shield
-              </p>
-            </div>
-          </div>
+            className="cursor-pointer hover:opacity-90 transition-opacity"
+          />
 
           <button
             onClick={() => setIsMobileOpen(false)}
@@ -88,7 +80,7 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
               setIsMobileOpen(false);
             }}
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
-              activePage === "dashboard" || (activePage === "command-core" && false)
+              activePage === "command-core" || activePage === "dashboard"
                 ? "bg-blue-50 text-blue-600 font-semibold"
                 : "text-slate-700 hover:text-slate-900 hover:bg-slate-50"
             }`}
