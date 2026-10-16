@@ -114,3 +114,237 @@ code, pre, .font-mono {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* ==========================================================================
+   Dark / Night Mode Comprehensive Styling
+   Consistent, readable, high-contrast theme across all dashboard components
+   ========================================================================== */
+
+.dark {
+  color-scheme: dark;
+  --bg-primary: #070b14;
+  --bg-surface: #0b1120;
+  --bg-card: #0f172a;
+  --border-subtle: #1e293b;
+  --border-subtle-hover: #334155;
+  --border-glow: rgba(0, 242, 254, 0.15);
+}
+
+.dark body {
+  background-color: #070b14;
+  color: #f1f5f9;
+}
+
+.dark .subtle-grid {
+  background-image: 
+    linear-gradient(to right, rgba(34, 211, 238, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(34, 211, 238, 0.04) 1px, transparent 1px);
+}
+
+/* Cards, Panels, Modals & Dropdown Backgrounds */
+.dark .bg-white {
+  background-color: #0f172a !important;
+}
+
+.dark .bg-slate-50,
+.dark .bg-slate-50\/80,
+.dark .bg-slate-50\/70,
+.dark .bg-slate-50\/60,
+.dark .bg-slate-50\/40 {
+  background-color: #0b1120 !important;
+}
+
+.dark .bg-slate-100,
+.dark .bg-slate-100\/90,
+.dark .bg-slate-100\/80,
+.dark .bg-slate-100\/60 {
+  background-color: #1e293b !important;
+}
+
+/* Borders */
+.dark .border-slate-200,
+.dark .border-slate-100,
+.dark .border-slate-200\/90,
+.dark .border-slate-200\/80,
+.dark .border-slate-200\/70,
+.dark .border-slate-200\/60 {
+  border-color: #1e293b !important;
+}
+
+.dark .border-slate-300 {
+  border-color: #334155 !important;
+}
+
+/* Text Colors */
+.dark .text-slate-900 {
+  color: #f8fafc !important;
+}
+
+.dark .text-slate-800 {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-slate-700 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+.dark .text-blue-900,
+.dark .text-blue-800 {
+  color: #93c5fd !important;
+}
+
+.dark .text-emerald-900,
+.dark .text-emerald-800 {
+  color: #6ee7b7 !important;
+}
+
+.dark .text-rose-900,
+.dark .text-rose-800,
+.dark .text-red-900,
+.dark .text-red-800 {
+  color: #fca5a5 !important;
+}
+
+.dark .text-amber-900,
+.dark .text-amber-800 {
+  color: #fcd34d !important;
+}
+
+.dark .text-purple-900,
+.dark .text-purple-800 {
+  color: #d8b4fe !important;
+}
+
+.dark .text-indigo-900,
+.dark .text-indigo-800 {
+  color: #a5b4fc !important;
+}
+
+/* Form Controls & Inputs */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.dark select,
+.dark textarea {
+  background-color: #0b1120 !important;
+  color: #f8fafc !important;
+  border-color: #1e293b !important;
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+.dark select:focus,
+.dark textarea:focus {
+  background-color: #0f172a !important;
+  border-color: #0ea5e9 !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Table Dividers & Hover */
+.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #1e293b !important;
+}
+
+.dark .hover\:bg-slate-50:hover {
+  background-color: #131d35 !important;
+}
+
+.dark .hover\:bg-slate-100:hover {
+  background-color: #1e293b !important;
+}
+
+.dark .hover\:text-slate-900:hover,
+.dark .hover\:text-slate-800:hover,
+.dark .hover\:text-slate-700:hover {
+  color: #ffffff !important;
+}
+
+/* Badges / Pills in Dark Mode */
+.dark .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.dark .bg-rose-50,
+.dark .bg-red-50 {
+  background-color: rgba(244, 63, 94, 0.15) !important;
+  color: #fb7185 !important;
+  border-color: rgba(244, 63, 94, 0.3) !important;
+}
+
+.dark .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.dark .bg-blue-50 {
+  background-color: rgba(37, 99, 235, 0.15) !important;
+  color: #60a5fa !important;
+  border-color: rgba(37, 99, 235, 0.3) !important;
+}
+
+.dark .bg-indigo-50 {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  color: #818cf8 !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+.dark .bg-purple-50 {
+  background-color: rgba(168, 85, 247, 0.15) !important;
+  color: #c084fc !important;
+  border-color: rgba(168, 85, 247, 0.3) !important;
+}
+
+.dark .bg-cyan-50 {
+  background-color: rgba(6, 182, 212, 0.15) !important;
+  color: #22d3ee !important;
+  border-color: rgba(6, 182, 212, 0.3) !important;
+}
+
+/* Fintech & Glass utilities */
+.dark .glass-panel,
+.dark .fintech-card,
+.dark .glass-card,
+.dark .glass-panel-elevated {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+}
+
+.dark .glass-card:hover {
+  background: #141f36 !important;
+  border-color: #334155 !important;
+}
+
+.dark .contradiction-alert-box {
+  background: rgba(153, 27, 27, 0.25) !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+}
+
+/* Modals & Popovers */
+.dark .bg-slate-900\/50 {
+  background-color: rgba(3, 7, 18, 0.75) !important;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}

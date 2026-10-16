@@ -35,9 +35,10 @@ const ICON_MAP = {
   Sliders,
 };
 
-export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIsMobileOpen, backendOnline }) {
+export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIsMobileOpen, backendOnline, theme = "light" }) {
   // Detection suite items: all items from constants
   const detectionItems = NAVIGATION_ITEMS;
+  const isDark = theme === "dark";
 
   return (
     <>
@@ -51,15 +52,17 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 w-72 bg-white border-r border-slate-200 z-50 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 w-72 ${
+          isDark ? "bg-[#0b1120] border-slate-800 text-slate-100" : "bg-white border-slate-200 text-slate-800"
+        } border-r z-50 flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0 ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Brand Header */}
-        <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+        <div className={`p-4 border-b ${isDark ? "border-slate-800" : "border-slate-200"} flex items-center justify-between`}>
           <PaySentriXLogo
             variant="horizontal"
-            theme="light"
+            theme={isDark ? "dark" : "light"}
             size="md"
             onClick={() => setActivePage("command-core")}
             className="cursor-pointer hover:opacity-90 transition-opacity"
@@ -83,14 +86,18 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
             }}
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
               activePage === "command-core" || activePage === "dashboard"
-                ? "bg-slate-100/90 text-slate-900 font-semibold shadow-2xs"
+                ? isDark
+                  ? "bg-slate-800/90 text-white font-semibold shadow-2xs"
+                  : "bg-slate-100/90 text-slate-900 font-semibold shadow-2xs"
+                : isDark
+                ? "text-slate-400 hover:text-white hover:bg-slate-800/60"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50/80"
             }`}
           >
             <div className="flex items-center space-x-3">
               <LayoutDashboard className={`w-4 h-4 transition-colors ${
                 activePage === "command-core" || activePage === "dashboard"
-                  ? "text-blue-600"
+                  ? "text-blue-500"
                   : "text-slate-400"
               }`} />
               <span>Dashboard</span>
@@ -98,7 +105,7 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
           </button>
 
           {/* Section Header */}
-          <div className="px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <div className={`px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider ${isDark ? "text-slate-500" : "text-slate-400"}`}>
             DETECTION SUITE
           </div>
 
@@ -108,20 +115,20 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
 
             // Custom badge mapping matching Screenshot 2
             let badgeText = item.badge;
-            let badgeStyle = "bg-slate-100 text-slate-600";
+            let badgeStyle = isDark ? "bg-slate-800 text-slate-300 border border-slate-700" : "bg-slate-100 text-slate-600";
 
             if (item.id === "command-core") {
               badgeText = "Live";
-              badgeStyle = "bg-emerald-50 text-emerald-700 border border-emerald-200/70 font-semibold";
+              badgeStyle = isDark ? "bg-emerald-950/60 text-emerald-400 border border-emerald-800/60 font-semibold" : "bg-emerald-50 text-emerald-700 border border-emerald-200/70 font-semibold";
             } else if (item.id === "mule-network") {
               badgeText = "Graph";
-              badgeStyle = "bg-amber-50 text-amber-700 border border-amber-200/70 font-semibold";
+              badgeStyle = isDark ? "bg-amber-950/60 text-amber-400 border border-amber-800/60 font-semibold" : "bg-amber-50 text-amber-700 border border-amber-200/70 font-semibold";
             } else if (item.id === "ai-payment-contract") {
               badgeText = "New";
-              badgeStyle = "bg-blue-50 text-blue-700 border border-blue-200/70 font-semibold";
+              badgeStyle = isDark ? "bg-blue-950/60 text-blue-400 border border-blue-800/60 font-semibold" : "bg-blue-50 text-blue-700 border border-blue-200/70 font-semibold";
             } else if (item.id === "ghostpay-detector") {
               badgeText = "Verify";
-              badgeStyle = "bg-indigo-50 text-indigo-700 border border-indigo-200/70 font-semibold";
+              badgeStyle = isDark ? "bg-indigo-950/60 text-indigo-400 border border-indigo-800/60 font-semibold" : "bg-indigo-50 text-indigo-700 border border-indigo-200/70 font-semibold";
             }
 
             return (
@@ -133,7 +140,11 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all group ${
                   isActive
-                    ? "bg-slate-100/90 text-slate-900 font-semibold shadow-2xs"
+                    ? isDark
+                      ? "bg-slate-800/90 text-white font-semibold shadow-2xs"
+                      : "bg-slate-100/90 text-slate-900 font-semibold shadow-2xs"
+                    : isDark
+                    ? "text-slate-400 hover:text-white hover:bg-slate-800/60"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50/80"
                 }`}
               >
@@ -141,7 +152,9 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
                   <Icon
                     className={`w-4 h-4 shrink-0 transition-colors ${
                       isActive
-                        ? "text-blue-600"
+                        ? "text-blue-500"
+                        : isDark
+                        ? "text-slate-500 group-hover:text-slate-300"
                         : "text-slate-400 group-hover:text-slate-600"
                     }`}
                   />
@@ -161,7 +174,7 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
         </div>
 
         {/* Bottom Engine Status & System Badge (Matching Screenshot 2) */}
-        <div className="p-3.5 m-3 rounded-xl bg-slate-50 border border-slate-200">
+        <div className={`p-3.5 m-3 rounded-xl border ${isDark ? "bg-slate-900/80 border-slate-800 text-slate-300" : "bg-slate-50 border-slate-200 text-slate-600"}`}>
           <div className="flex items-center justify-between text-xs mb-1">
             <div className="flex items-center space-x-2">
               <span className="relative flex h-2 w-2">

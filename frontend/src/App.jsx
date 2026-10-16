@@ -31,6 +31,32 @@ export default function App() {
   const [complaintDraft, setComplaintDraft] = useState(null);
   const [auditDetailRecord, setAuditDetailRecord] = useState(null);
 
+  // Theme state synchronized with existing localStorage and system
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem("paysentrix_scam_checker_theme") || "light";
+    } catch {
+      return "light";
+    }
+  });
+
+  useEffect(() => {
+    // Keep HTML root class synchronized for Tailwind dark mode
+    document.documentElement.classList.toggle("dark", theme === "dark");
+  }, [theme]);
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      try {
+        const stored = localStorage.getItem("paysentrix_scam_checker_theme") || "light";
+        setTheme(stored);
+        document.documentElement.classList.toggle("dark", stored === "dark");
+      } catch {}
+    };
+    window.addEventListener("paysentrix_scam_checker_theme_changed", handleThemeChange);
+    return () => window.removeEventListener("paysentrix_scam_checker_theme_changed", handleThemeChange);
+  }, []);
+
   // Heartbeat check on mount and interval
   useEffect(() => {
     const pingBackend = async () => {
@@ -61,7 +87,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex relative overflow-x-hidden">
+    <div className={`min-h-screen ${theme === "dark" ? "dark bg-[#070b14] text-slate-100" : "bg-[#f8fafc] text-slate-800"} flex relative overflow-x-hidden transition-colors duration-200`}>
       {/* Background Grid */}
       <AmbientGlow />
 
@@ -72,6 +98,7 @@ export default function App() {
         isMobileOpen={isMobileOpen}
         setIsMobileOpen={setIsMobileOpen}
         backendOnline={backendOnline}
+        theme={theme}
       />
 
       {/* Main Content Area */}
@@ -83,6 +110,7 @@ export default function App() {
           setIsMobileOpen={setIsMobileOpen}
           backendOnline={backendOnline}
           onSelectPreset={handleSelectPreset}
+          currentTheme={theme}
         />
 
         {/* Page Content Viewport */}

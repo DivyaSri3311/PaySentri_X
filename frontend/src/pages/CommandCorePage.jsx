@@ -268,19 +268,19 @@ export default function CommandCorePage({ setActivePage, onOpenAuditDetail, onSe
         </div>
       </section>
 
-      {/* 3. Interactive Threat Topology / Real-Time Financial Transaction Graph */}
+      {/* 3. FRAUD INTELLIGENCE / Entity Relationship Map */}
       <section className="bg-white border border-slate-200/80 rounded-xl p-5 sm:p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
               <span className="text-xs font-semibold text-blue-700 uppercase tracking-wider">
-                Threat Topology
+                FRAUD INTELLIGENCE
               </span>
               <span className="text-slate-300">•</span>
-              <span className="text-xs text-slate-500">Three.js Graph Engine</span>
+              <span className="text-xs text-slate-500">Entity Relationship Analysis</span>
             </div>
             <h2 className="text-base font-heading font-bold text-slate-900">
-              Real-Time Financial Transaction Graph
+              Entity Relationship Map
             </h2>
           </div>
 

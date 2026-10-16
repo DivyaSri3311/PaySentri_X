@@ -193,10 +193,10 @@ export default function TransactionNetwork3D() {
       <div className="absolute top-3 left-4 right-4 flex items-center justify-between z-10 pointer-events-none">
         <div>
           <span className="text-[10px] font-mono uppercase tracking-wider text-blue-400 font-semibold">
-            Interactive Threat Topology
+            FRAUD INTELLIGENCE
           </span>
           <h3 className="text-sm font-heading font-bold text-white">
-            Real-Time Financial Transaction Graph
+            Entity Relationship Map
           </h3>
         </div>
 
