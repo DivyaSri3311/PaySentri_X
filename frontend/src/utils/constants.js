@@ -16,6 +16,7 @@ export const BRAND = {
 
 export const NAVIGATION_ITEMS = [
   { id: "command-core", label: "Command Core", icon: "Activity", badge: "Live" },
+  { id: "mule-network", label: "Mule Network", icon: "Network", badge: "Graph", highlight: true },
   { id: "transaction-intel", label: "Transaction Intelligence", icon: "TrendingUp" },
   { id: "ai-payment-contract", label: "AI Payment Contract", icon: "ShieldAlert", badge: "New", highlight: true },
   { id: "message-intel", label: "Message Intelligence", icon: "MessageSquareWarning" },

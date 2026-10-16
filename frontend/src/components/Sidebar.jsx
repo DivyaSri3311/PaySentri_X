@@ -13,6 +13,7 @@ import {
   Sliders,
   ShieldCheck,
   Receipt,
+  Network,
   X
 } from "lucide-react";
 import PaySentriXLogo from "./PaySentriXLogo";
@@ -27,6 +28,7 @@ const ICON_MAP = {
   Link2,
   QrCode,
   Receipt,
+  Network,
   Cpu,
   BarChart3,
   FileText,
@@ -111,6 +113,9 @@ export default function Sidebar({ activePage, setActivePage, isMobileOpen, setIs
             if (item.id === "command-core") {
               badgeText = "Live";
               badgeStyle = "bg-emerald-50 text-emerald-700 border border-emerald-200/70 font-semibold";
+            } else if (item.id === "mule-network") {
+              badgeText = "Graph";
+              badgeStyle = "bg-amber-50 text-amber-700 border border-amber-200/70 font-semibold";
             } else if (item.id === "ai-payment-contract") {
               badgeText = "New";
               badgeStyle = "bg-blue-50 text-blue-700 border border-blue-200/70 font-semibold";
