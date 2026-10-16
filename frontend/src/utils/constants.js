@@ -16,13 +16,13 @@ export const BRAND = {
 
 export const NAVIGATION_ITEMS = [
   { id: "command-core", label: "Command Core", icon: "Activity", badge: "Live" },
+  { id: "qr-guardian", label: "Payment Scam Checker", icon: "QrCode" },
+  { id: "ghostpay-detector", label: "GhostPay Detector", icon: "Receipt", badge: "New" },
   { id: "mule-network", label: "Mule Network", icon: "Network", badge: "Graph", highlight: true },
   { id: "transaction-intel", label: "Transaction Intelligence", icon: "TrendingUp" },
   { id: "ai-payment-contract", label: "AI Payment Contract", icon: "ShieldAlert", badge: "New", highlight: true },
   { id: "message-intel", label: "Message Intelligence", icon: "MessageSquareWarning" },
   { id: "link-scanner", label: "Payment Link Scanner", icon: "Link2" },
-  { id: "qr-guardian", label: "Payment Scam Checker", icon: "QrCode" },
-  { id: "ghostpay-detector", label: "GhostPay Detector", icon: "Receipt", badge: "New" },
   { id: "fraud-evolution", label: "Fraud Evolution Lab", icon: "Cpu" },
   { id: "data-science-studio", label: "Data Science Studio", icon: "BarChart3" },
   { id: "audit-history", label: "Audit History", icon: "FileText" },
