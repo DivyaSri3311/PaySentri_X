@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 80" fill="none" width="100%" height="100%">
+  <defs>
+    <!-- PaySentriX Electric Cyan Gradient -->
+    <linearGradient id="psx-l-cyan" x1="15" y1="15" x2="85" y2="85" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#06B6D4" />
+      <stop offset="50%" stop-color="#0891B2" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+
+    <linearGradient id="psx-l-plate" x1="20" y1="15" x2="65" y2="75" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1E3A8A" />
+      <stop offset="50%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#0369A1" />
+    </linearGradient>
+
+    <linearGradient id="psx-l-rim" x1="50" y1="7" x2="50" y2="93" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="50%" stop-color="#06B6D4" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+
+    <linearGradient id="psx-l-text-x" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06B6D4" />
+      <stop offset="60%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+  </defs>
+
+  <!-- Logo Mark (scaled & translated to fit 64x64 at x=8, y=8) -->
+  <g transform="translate(8, 8) scale(0.64)">
+    <!-- Outer Shield -->
+    <path
+      d="M50 7 L86 23 L86 58 L50 93 L14 58 L14 23 Z"
+      stroke="url(#psx-l-rim)"
+      stroke-width="2.5"
+      stroke-linejoin="round"
+      fill="rgba(240, 249, 255, 0.6)"
+    />
+
+    <!-- 'P' Monogram -->
+    <path
+      d="M24 25 H54 C66 25 72 31 72 41 C72 50 65 56 54 56 H37 V75 L24 67 V25 Z"
+      fill="url(#psx-l-plate)"
+      stroke="#0F172A"
+      stroke-width="1.2"
+      stroke-opacity="0.6"
+    />
+
+    <!-- 'P' Counter -->
+    <path d="M37 36 H52 C57 36 60 38 60 41 C60 45 57 47 52 47 H37 V36 Z" fill="#FFFFFF" />
+
+    <!-- 'X' Spar -->
+    <path d="M66 20 L80 27 L48 78 L34 71 Z" fill="url(#psx-l-cyan)" />
+
+    <!-- 'X' Rising Wing -->
+    <path d="M44 61 L56 52 L80 81 L68 89 Z" fill="#0284C7" />
+
+    <!-- Core Nexus -->
+    <polygon points="50,56 57,63 50,70 43,63" fill="#06B6D4" />
+    <circle cx="50" cy="93" r="2.2" fill="#0284C7" />
+  </g>
+
+  <!-- Typographic Wordmark -->
+  <g transform="translate(86, 0)">
+    <text x="0" y="47" font-family="'Outfit', 'Inter', -apple-system, sans-serif" font-size="34" font-weight="800" fill="#0F172A" letter-spacing="-0.02em">
+      Pay<tspan font-weight="600" fill="#334155">Sentri</tspan><tspan font-weight="800" fill="url(#psx-l-text-x)">X</tspan>
+    </text>
+    <text x="2" y="66" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" fill="#0284C7" letter-spacing="0.26em">
+      AI UPI THREAT SHIELD
+    </text>
+  </g>
+</svg>

@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Check
 } from "lucide-react";
+import PaySentriXLogo from "./PaySentriXLogo";
 import { BRAND, DEMO_PRESETS, NAVIGATION_ITEMS } from "../utils/constants";
 
 export default function TopNav({
@@ -80,9 +81,14 @@ export default function TopNav({
         <button
           onClick={() => setIsMobileOpen(true)}
           className="p-2 -ml-1 text-slate-500 hover:text-slate-900 rounded-lg lg:hidden"
+          aria-label="Open Navigation Menu"
         >
           <Menu className="w-5 h-5" />
         </button>
+
+        <div className="lg:hidden flex items-center cursor-pointer" onClick={() => setActivePage("command-core")}>
+          <PaySentriXLogo variant="icon" size="sm" theme="light" />
+        </div>
 
         {/* Search Bar matching Screenshot 2 */}
         <div className="relative w-full max-w-md">

@@ -8,6 +8,7 @@ export const BRAND = {
   name: "PaySentriX",
   shortName: "PSX",
   tagline: "Every Payment has a story, We find the Truth",
+  officialTagline: "Beyond Detection. Ahead of Deception.",
   category: "AI-Powered UPI Payment Fraud Prevention",
   version: "3.0.0",
   hackathon: "CyberCup 6.0 | Problem Statement CC6-AI02",
