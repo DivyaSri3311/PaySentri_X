@@ -7,6 +7,7 @@ import AuditDetailModal from "./components/AuditDetailModal";
 
 // 10 Pages
 import CommandCorePage from "./pages/CommandCorePage";
+import MuleNetworkPage from "./pages/MuleNetworkPage";
 import TransactionIntelligencePage from "./pages/TransactionIntelligencePage";
 import AIPaymentContractPage from "./pages/AIPaymentContractPage";
 import MessageIntelligencePage from "./pages/MessageIntelligencePage";
@@ -92,6 +93,10 @@ export default function App() {
               onOpenAuditDetail={openAuditDetail}
               onSelectPreset={handleSelectPreset}
             />
+          )}
+
+          {activePage === "mule-network" && (
+            <MuleNetworkPage />
           )}
 
           {activePage === "transaction-intel" && (

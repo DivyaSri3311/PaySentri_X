@@ -232,5 +232,70 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload),
     });
+  },
+
+  // MuleNet Intelligence Endpoints
+  getMuleNetOverview: async () => {
+    return await request("/api/mulenet/overview");
+  },
+
+  getMuleNetGraph: async ({ focusAccount = "", focusCluster = "", minRisk = 0, limit = 250 } = {}) => {
+    const params = new URLSearchParams();
+    if (focusAccount) params.append("focus_account", focusAccount);
+    if (focusCluster) params.append("focus_cluster", focusCluster);
+    if (minRisk > 0) params.append("min_risk", minRisk);
+    if (limit) params.append("limit", limit);
+    const qs = params.toString();
+    return await request(`/api/mulenet/graph${qs ? `?${qs}` : ""}`);
+  },
+
+  getMuleNetAccount: async (accountId) => {
+    return await request(`/api/mulenet/accounts/${accountId}`);
+  },
+
+  getMuleNetTransactions: async (limit = 50, offset = 0) => {
+    return await request(`/api/mulenet/transactions?limit=${limit}&offset=${offset}`);
+  },
+
+  getMuleNetClusters: async () => {
+    return await request("/api/mulenet/clusters");
+  },
+
+  getMuleNetAlerts: async (limit = 50) => {
+    return await request(`/api/mulenet/alerts?limit=${limit}`);
+  },
+
+  getMuleNetReplay: async (targetId) => {
+    return await request(`/api/mulenet/cases/${targetId}/replay`);
+  },
+
+  startMuleNetSimulation: async () => {
+    return await request("/api/mulenet/simulation/start", { method: "POST" });
+  },
+
+  pauseMuleNetSimulation: async () => {
+    return await request("/api/mulenet/simulation/pause", { method: "POST" });
+  },
+
+  resetMuleNetSimulation: async () => {
+    return await request("/api/mulenet/simulation/reset", { method: "POST" });
+  },
+
+  injectMuleNetScenario: async (scenarioType) => {
+    return await request("/api/mulenet/simulation/inject", {
+      method: "POST",
+      body: JSON.stringify({ scenario_type: scenarioType }),
+    });
+  },
+
+  configMuleNetSimulation: async (config) => {
+    return await request("/api/mulenet/simulation/config", {
+      method: "PATCH",
+      body: JSON.stringify(config),
+    });
+  },
+
+  exportMuleNetCase: async (clusterId) => {
+    return await request(`/api/mulenet/export/${clusterId}`);
   }
 };
